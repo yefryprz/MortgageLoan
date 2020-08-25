@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:    
+    docker:
+      - image: cirrusci/flutter:1.20.2
+
+    branches:
+      only: master
+
+    steps:
+      - checkout
+       
+      - run:
+          name: Run Flutter doctor
+          command: flutter doctor
+
+      - run:
+          name: Run Flutter build
+          command: flutter build apk
