@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mortgageloan/src/models/LoanData.dart';
+import 'package:mortgageloan/src/models/Loan.model.dart';
 import 'package:mortgageloan/src/widgets/datetable_widget.dart';
 
 class AmortizationPage extends StatefulWidget {
@@ -11,16 +11,13 @@ class AmortizationPage extends StatefulWidget {
 }
 
 class _AmortizationPageState extends State<AmortizationPage> {
-
-
   @override
   Widget build(BuildContext context) {
 
-    final LoanData args = ModalRoute.of(context).settings.arguments;
+    final Loan args = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
      appBar: AppBar(
-        backgroundColor: Colors.cyan,
         title: Text("Amortization Table")
       ),
       body: ListView(

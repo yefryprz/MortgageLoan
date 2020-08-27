@@ -16,11 +16,11 @@ class _CustomCardState extends State<CustomCard> {
     return Card(
       child: Column(
         children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Your estimated monthly payment", style: TextStyle(fontSize: 18.0))
-            ],
+          Center(
+            child: Container(
+              padding: EdgeInsets.only(top: 15),
+              child: Text("Your estimated monthly payment", style: TextStyle(fontSize: 18.0)),
+            )
           ),
           SizedBox(height: 15.0),
           Text(

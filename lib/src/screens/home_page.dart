@@ -2,8 +2,10 @@ import 'dart:math';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:mortgageloan/src/models/LoanData.dart';
+import 'package:mortgageloan/src/database/load.data.dart';
+import 'package:mortgageloan/src/models/Loan.model.dart';
 import 'package:mortgageloan/src/widgets/card_widger.dart';
+import 'package:mortgageloan/src/widgets/drawler_widget.dart';
 import 'package:mortgageloan/src/widgets/input_widget.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,15 +17,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   
   double _payment = 0;
-  final amountInput = new TextEditingController();
-  final termInput = new TextEditingController();
-  final rateInput = new TextEditingController();
+  final amountInput = TextEditingController();
+  final termInput = TextEditingController();
+  final rateInput = TextEditingController();
+  final loanRepo = LoanData();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.cyan,
         title: Text("Calculator"),
         actions: [
           IconButton(
@@ -34,8 +36,9 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
+      drawer: CustomDrawler(),
       body: Container(
-        padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
+        margin: EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
         child: ListView(
           children: [
             CustomInput(
@@ -71,10 +74,12 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 24.0
                 )),
                 color: Colors.cyan,
-                onPressed: (){
-                  setState(() {
-                    calc(double.parse(amountInput.text), int.parse(termInput.text), double.parse(rateInput.text));
-                  });
+                onPressed: () async {
+                  if (await validField()) {
+                    setState(() {
+                        calc(double.parse(amountInput.text), int.parse(termInput.text), double.parse(rateInput.text));
+                    });
+                  }
                 }
               ),
             ),
@@ -86,35 +91,54 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void goToAmortization(){
-    Navigator.pushNamed(context, "amortization", arguments: LoanData(double.parse(amountInput.text), _payment, double.parse(rateInput.text), int.parse(termInput.text)));
+  void goToAmortization() async {
+    if (await validField()) {
+      Navigator.pushNamed(context, "amortization", arguments: 
+      Loan(
+        amount: double.parse(amountInput.text), 
+        payment:_payment, 
+        rate: double.parse(rateInput.text), 
+        term: int.parse(termInput.text)
+      ));
+    }
   }
 
-  void calc(double amount, int term, double rate) async {
-
-    if (amount == 0 || term == 0 || rate == 0) {
-      await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Warning"),
-            content: Text("All fields are required"),
-            actions: [
-              FlatButton(onPressed:() => Navigator.pop(context), child: Text("Ok")),
-            ],
-          );
-        }
-      );
-      return;
-    }
-
+  void calc(double amount, int term, double rate) {
     var interest = rate / 100 / 12;
     var result = (1 - pow(1 + interest, term * -1)) / interest;
     this._payment = double.parse((amount / result).toStringAsFixed(2));
+
+    loanRepo.insertRecord(Loan(
+      amount: double.parse(amountInput.text), 
+      payment:_payment, 
+      rate: double.parse(rateInput.text), 
+      term: int.parse(termInput.text)
+    ));
   }
 
-  void cleanFields(BuildContext context) {
+  Future<bool> validField({String message, bool showMessage = true}) async {
+    if (amountInput.text.isEmpty || termInput.text.isEmpty || rateInput.text.isEmpty) {
+      if (showMessage) {
+        await showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Warning"),
+              content: Text(message == null ? "All fields are required" : message),
+              actions: [
+                FlatButton(onPressed:() => Navigator.pop(context), child: Text("Ok")),
+              ],
+            );
+          }
+        );
+      }
+      return false;
+    }
+    else return true;
+  }
+
+  void cleanFields(BuildContext context) async {
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -146,4 +170,5 @@ class _HomePageState extends State<HomePage> {
       }
     );
   }
+
 }

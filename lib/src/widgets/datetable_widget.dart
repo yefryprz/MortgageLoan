@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
 
-class CustomDateTable extends StatefulWidget {
-  
+class CustomDateTable extends StatelessWidget {
+
   final List<DataRow> rowItems;
 
   CustomDateTable({Key key,  this.rowItems}) : super(key: key);
-
-  @override
-  _CustomDateTableState createState() => _CustomDateTableState();
-}
-
-class _CustomDateTableState extends State<CustomDateTable> {
-  static const int numItems = 10;
-  List<bool> selected = List<bool>.generate(numItems, (index) => false);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +25,7 @@ class _CustomDateTableState extends State<CustomDateTable> {
             label: Text('Balance')
           )
         ],
-        rows: widget.rowItems
+        rows: rowItems
       ),
     );
   }
