@@ -16,4 +16,4 @@ jobs:
 
       - run:
           name: Run Flutter build
-          command: flutter build apk
+          command: flutter build appbundle --debug --obfuscate --split-debug-info=/
