@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:mortgageloan/src/models/Loan.model.dart';
+import 'package:mortgageloan/src/models/Loan_model.dart';
 import 'package:intl/intl.dart';
 
 class HistoryCard extends StatelessWidget {
 
   final Loan data;
-  HistoryCard({this.data});
+  HistoryCard({ this.data });
   
   @override
   Widget build(BuildContext context) {
-    
-    var f = new NumberFormat("#,###.##", "en_US");
-
+    var nFormat = new NumberFormat("#,###.##", "en_US");
     return Card(
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, "amortization", arguments: 
-          Loan(
-            amount: data.amount, 
-            payment:data.payment, 
-            rate: data.rate, 
+          Navigator.pushNamed(context, "amortization", arguments: Loan(
+            amount: data.amount,
+            payment:data.payment,
+            rate: data.rate,
             term: data.term
           ));
         },
@@ -30,59 +27,35 @@ class HistoryCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  _info("Amount", nFormat.format(data.amount)),
+                  _info("Term", nFormat.format(data.term)),
+                  _info("Rate", data.rate.toString()),
                   Column(
                     children: [
-                      Text(
-                        "${f.format(data.amount)}",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 18
-                        ),
-                      ),
-                      Text("Amount")
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        "${data.term}",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 18
-                        ),
-                      ),
-                      Text("term")
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        "${data.rate}",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 18
-                        ),
-                      ),
-                      Text("rate")
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        "${f.format(data.payment)}",
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontSize: 20
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      Text("${nFormat.format(data.payment)}", style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 18
+                      )),
+                    ]
+                  )
+                ]
               )
-            ],
-          ),
-        ),
+            ]
+          )
+        )
       )
+    );
+  }
+
+  Widget _info(String title, String value){
+    return Column(
+      children: [
+        Text(value, style: TextStyle(
+          color: Colors.grey,
+          fontSize: 15
+        )),
+        Text(title)
+      ],
     );
   }
 }

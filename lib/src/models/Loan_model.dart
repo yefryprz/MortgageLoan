@@ -1,5 +1,4 @@
 class Loan {
-  
   int id;
   double amount;
   double payment;

@@ -1,25 +1,23 @@
 import 'package:hive/hive.dart';
-import 'package:mortgageloan/src/models/Loan.model.dart';
+import 'package:mortgageloan/src/models/Loan_model.dart';
 
 class LoanData {
-
   void insertRecord(Loan loan) async {
     final db = await Hive.openBox("loan");
     loan.id = db.length + 1;
-    db.put(loan.id,loan.toMap());
+    db.put(loan.id, loan.toMap());
   }
 
-  Future<List<dynamic>> selectRecords() async {
+  Future<List<Loan>> selectRecords() async {
     final db = await Hive.openBox("loan");
     final records = db.values.toList();
     return List.generate(records.length, (index) {
       return Loan(
         id: records[index]["id"],
-        amount: records[index]["amount"], 
-        payment: records[index]["payment"], 
-        rate : records[index]["rate"], 
-        term: records[index]["term"]
-      );
+        amount: records[index]["amount"],
+        payment: records[index]["payment"],
+        rate: records[index]["rate"],
+        term: records[index]["term"]);
     });
   }
 

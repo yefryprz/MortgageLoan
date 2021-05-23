@@ -2,8 +2,9 @@ import 'dart:math';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:mortgageloan/src/database/load.data.dart';
-import 'package:mortgageloan/src/models/Loan.model.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:mortgageloan/src/database/hive.dart';
+import 'package:mortgageloan/src/models/Loan_model.dart';
 import 'package:mortgageloan/src/widgets/card_widger.dart';
 import 'package:mortgageloan/src/widgets/drawler_widget.dart';
 import 'package:mortgageloan/src/widgets/input_widget.dart';
@@ -17,7 +18,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   
   double _payment = 0;
-  final amountInput = TextEditingController();
+  final controller = new MaskedTextController(mask: '000,000,000');
   final termInput = TextEditingController();
   final rateInput = TextEditingController();
   final loanRepo = LoanData();
@@ -26,50 +27,45 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text("Calculator"),
         actions: [
           IconButton(
-            icon: Icon(Icons.cached), 
-            onPressed: () {
-              cleanFields(context);
-            }
+            icon: Icon(Icons.cached_rounded), 
+            onPressed: () => cleanFields(context)
           )
         ],
       ),
       drawer: CustomDrawler(),
       body: Container(
-        margin: EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
+        margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: ListView(
           children: [
             CustomInput(
               label: "Loan Amount",
               suffixIcon: Icon(Icons.attach_money),
               inputType: TextInputType.number,
-              inputControl: amountInput
+              inputControl: controller
             ),
-            SizedBox(height: 15.0),
             CustomInput(
               label: "Term (months)",
               suffixIcon: Icon(Icons.calendar_today),
               inputType: TextInputType.number,
               inputControl: termInput
             ),
-            SizedBox(height: 15.0),
             CustomInput(
               label: "Interest Rate",
-              suffixIcon: Icon(Icons.keyboard),
+              suffixIcon: Icon(Icons.calculate_outlined),
               inputType: TextInputType.number,
               inputControl: rateInput
             ),
-            SizedBox(height: 15.0),
             SizedBox(
               height: 56.0,
               child: FlatButton(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)
                 ),
-                child: Text("Calculate", 
-                style: TextStyle(
+                child: Text("Calculate", style: TextStyle(
                   color: Colors.white,
                   fontSize: 24.0
                 )),
@@ -77,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () async {
                   if (await validField()) {
                     setState(() {
-                        calc(double.parse(amountInput.text), int.parse(termInput.text), double.parse(rateInput.text));
+                        calc(double.parse(controller.text.replaceAll(",", "")), int.parse(termInput.text), double.parse(rateInput.text));
                     });
                   }
                 }
@@ -93,9 +89,8 @@ class _HomePageState extends State<HomePage> {
 
   void goToAmortization() async {
     if (await validField()) {
-      Navigator.pushNamed(context, "amortization", arguments: 
-      Loan(
-        amount: double.parse(amountInput.text), 
+      Navigator.pushNamed(context, "amortization", arguments: Loan (
+        amount: double.parse(controller.text.replaceAll(",", "")), 
         payment:_payment, 
         rate: double.parse(rateInput.text), 
         term: int.parse(termInput.text)
@@ -108,8 +103,8 @@ class _HomePageState extends State<HomePage> {
     var result = (1 - pow(1 + interest, term * -1)) / interest;
     this._payment = double.parse((amount / result).toStringAsFixed(2));
 
-    loanRepo.insertRecord(Loan(
-      amount: double.parse(amountInput.text), 
+    loanRepo.insertRecord(Loan (
+      amount: double.parse(controller.text.replaceAll(",", "")), 
       payment:_payment, 
       rate: double.parse(rateInput.text), 
       term: int.parse(termInput.text)
@@ -117,7 +112,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> validField({String message, bool showMessage = true}) async {
-    if (amountInput.text.isEmpty || termInput.text.isEmpty || rateInput.text.isEmpty) {
+    if (controller.text.isEmpty || termInput.text.isEmpty || rateInput.text.isEmpty) {
       if (showMessage) {
         await showDialog(
           barrierDismissible: false,
@@ -127,7 +122,7 @@ class _HomePageState extends State<HomePage> {
               title: Text("Warning"),
               content: Text(message == null ? "All fields are required" : message),
               actions: [
-                FlatButton(onPressed:() => Navigator.pop(context), child: Text("Ok")),
+                FlatButton(onPressed:() => Navigator.pop(context), child: Text("Ok"))
               ],
             );
           }
@@ -138,37 +133,13 @@ class _HomePageState extends State<HomePage> {
     else return true;
   }
 
-  void cleanFields(BuildContext context) async {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Confirm"),
-          content: Text("Are you sure that want to clean all field ?"),
-          actions: [
-            FlatButton(
-              onPressed: () {
-                setState(() {
-                  amountInput.clear();
-                  termInput.clear();
-                  rateInput.clear();
-                  _payment = 0;
-                });
-                Navigator.pop(context);
-              }, 
-              child: Text("Yes") 
-            ),
-            FlatButton(
-              onPressed: () {
-                Navigator.pop(context);
-              }, 
-              child: Text("No") 
-            )
-          ],
-        );
-      }
-    );
+  void cleanFields(BuildContext context) {
+    setState(() {
+      controller.clear();
+      termInput.clear();
+      rateInput.clear();
+      _payment = 0;
+    });
   }
 
 }
