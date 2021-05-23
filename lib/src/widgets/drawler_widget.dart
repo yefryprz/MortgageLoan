@@ -24,21 +24,15 @@ class CustomDrawler extends StatelessWidget {
                         image: AssetImage("assets/logo.png"),
                         fit: BoxFit.fill
                       )
-                    ),
-                  ),
-                  Text(
-                    "Mortgage Loan",
-                    style: TextStyle(
-                      fontSize: 25,
-                      color: Colors.white
                     )
                   ),
-                  Text(
-                    "Version: 1.0.3",
-                    style: TextStyle(
-                      color: Colors.white
-                    )
-                  )
+                  Text( "Mortgage Loan", style: TextStyle(
+                    fontSize: 25,
+                    color: Colors.white
+                  )),
+                  Text("Version: 1.0.3", style: TextStyle(
+                    color: Colors.white
+                  ))
                 ],
               ),
             ),
@@ -46,27 +40,21 @@ class CustomDrawler extends StatelessWidget {
           ListTile(
             onTap: () => Navigator.popAndPushNamed(context, "/"),
             leading: Icon(Icons.keyboard, color: Theme.of(context).primaryColor),
-            title: Text(
-              "Calculate Loan",
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 18
-              ),
-            ),
+            title: Text("Calculate Loan", style: TextStyle(
+              color: Colors.grey[700],
+              fontSize: 18
+            ))
           ),
           ListTile(
             onTap: () => Navigator.popAndPushNamed(context, "history"),
             leading: Icon(Icons.history, color: Theme.of(context).primaryColor),
-            title: Text(
-              "History",
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 18
-              ),
-            ),
+            title: Text("History", style: TextStyle(
+              color: Colors.grey[700],
+              fontSize: 18
+            ))
           )
-        ],
-      ),
+        ]
+      )
     );
   }
 }

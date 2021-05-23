@@ -11,17 +11,20 @@ class CustomInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      keyboardType: inputType,
-      controller: inputControl,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0)
-        ),
-        labelText: label,
-        hintText: label,
-        suffixIcon: suffixIcon
-      )
+    return Container(
+      margin: EdgeInsets.only(bottom: 10, top: 5),
+      child: TextField(
+        keyboardType: inputType,
+        controller: inputControl,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0)
+          ),
+          labelText: label,
+          hintText: label,
+          suffixIcon: suffixIcon
+        )
+      ),
     );
   }
 }
