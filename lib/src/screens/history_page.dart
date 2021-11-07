@@ -16,13 +16,11 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         title: Text("History"),
         actions: [
           IconButton(
-            icon: Icon(Icons.delete), 
-            onPressed: () => setState(() => loanRepo.deleteAllRecord())
-          )
+              icon: Icon(Icons.delete),
+              onPressed: () => setState(() => loanRepo.deleteAllRecord()))
         ],
       ),
       drawer: CustomDrawler(),
@@ -37,28 +35,31 @@ class _HistoryPageState extends State<HistoryPage> {
             itemBuilder: (BuildContext context, int index) {
               return Dismissible(
                 key: UniqueKey(),
-                direction: DismissDirection.endToStart, 
-                crossAxisEndOffset: 100,
+                direction: DismissDirection.endToStart,
+                // crossAxisEndOffset: 100,
                 child: HistoryCard(data: snapshot.data[index]),
                 onDismissed: (direction) {
-                  setState(() => loanRepo.deleteRecord(snapshot.data[index].id));
+                  setState(() {
+                    loanRepo.deleteRecord(snapshot.data[index].id);
+                  });
                 },
                 background: Container(
-                  padding: EdgeInsets.only(right: 10),
-                  alignment: Alignment.centerRight,
-                  color: Colors.red,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.delete_forever_sharp, color: Colors.white),
-                      Text( "Delete", style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
-                      )
-                    ],
-                  )
-                ),
+                    padding: EdgeInsets.only(right: 10),
+                    alignment: Alignment.centerRight,
+                    color: Colors.red,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.delete_forever_sharp, color: Colors.white),
+                        Text(
+                          "Delete",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
+                        )
+                      ],
+                    )),
               );
             },
           );

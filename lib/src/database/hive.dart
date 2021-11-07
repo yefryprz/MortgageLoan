@@ -13,11 +13,11 @@ class LoanData {
     final records = db.values.toList();
     return List.generate(records.length, (index) {
       return Loan(
-        id: records[index]["id"],
-        amount: records[index]["amount"],
-        payment: records[index]["payment"],
-        rate: records[index]["rate"],
-        term: records[index]["term"]);
+          id: records[index]["id"],
+          amount: records[index]["amount"],
+          payment: records[index]["payment"],
+          rate: records[index]["rate"],
+          term: records[index]["term"]);
     });
   }
 

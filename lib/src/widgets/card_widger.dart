@@ -31,7 +31,7 @@ class _CustomCardState extends State<CustomCard> {
             ),
           ),
           SizedBox(height: 10.0),
-          FlatButton(
+          TextButton(
             onPressed: widget.acction,
             child: Text("Generate Amortization", style: TextStyle(color: Colors.green, fontSize: 20.0))
           )
