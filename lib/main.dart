@@ -14,23 +14,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.cyan,
-        appBarTheme: AppBarTheme(
-          actionsIconTheme: IconThemeData(
-            color: Colors.white
-          ), 
-          iconTheme: IconThemeData(
-            color: Colors.white
+          primaryColor: Colors.cyan,
+          appBarTheme: AppBarTheme(
+            centerTitle: true,
+            backgroundColor: Colors.cyan,
+            actionsIconTheme: IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: Colors.white),
           ),
-        ),
-        primaryTextTheme: TextTheme(
-          headline6: TextStyle(color: Colors.white)
-        )
-      ),
+          primaryTextTheme:
+              TextTheme(headline6: TextStyle(color: Colors.white))),
       debugShowCheckedModeBanner: false,
       title: 'Mortgage Loan',
       routes: routes(),
       initialRoute: "/"
     );
   }
-} 
+}

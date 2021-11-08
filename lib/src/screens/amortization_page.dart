@@ -15,7 +15,7 @@ class _AmortizationPageState extends State<AmortizationPage> {
     final Loan args = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
-      appBar: AppBar(centerTitle: true, title: Text("Amortization Table")),
+      appBar: AppBar(title: Text("Amortization Table")),
       body: SingleChildScrollView(
         physics: ScrollPhysics(),
         child: SingleChildScrollView(
