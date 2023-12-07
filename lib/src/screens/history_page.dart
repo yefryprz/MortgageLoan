@@ -16,10 +16,10 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("History"),
+        title: const Text("History"),
         actions: [
           IconButton(
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               onPressed: () => setState(() => loanRepo.deleteAllRecord()))
         ],
       ),
@@ -31,16 +31,16 @@ class _HistoryPageState extends State<HistoryPage> {
             return Center(child: CircularProgressIndicator());
 
           return ListView.builder(
-            itemCount: snapshot.data.length,
+            itemCount: snapshot.data!.length,
             itemBuilder: (BuildContext context, int index) {
               return Dismissible(
                 key: UniqueKey(),
                 direction: DismissDirection.endToStart,
                 // crossAxisEndOffset: 100,
-                child: HistoryCard(data: snapshot.data[index]),
+                child: HistoryCard(data: snapshot.data![index]),
                 onDismissed: (direction) {
                   setState(() {
-                    loanRepo.deleteRecord(snapshot.data[index].id);
+                    loanRepo.deleteRecord(snapshot.data![index].id);
                   });
                 },
                 background: Container(

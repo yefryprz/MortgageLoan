@@ -2,9 +2,9 @@ import 'package:hive/hive.dart';
 import 'package:mortgageloan/src/models/Loan_model.dart';
 
 class LoanData {
-  void insertRecord(Loan loan) async {
+  void insertRecord(Loan? loan) async {
     final db = await Hive.openBox("loan");
-    loan.id = db.length + 1;
+    loan!.id = db.length + 1;
     db.put(loan.id, loan.toMap());
   }
 
@@ -21,7 +21,7 @@ class LoanData {
     });
   }
 
-  void deleteRecord(int id) async {
+  void deleteRecord(int? id) async {
     final db = await Hive.openBox("loan");
     db.delete(id);
   }

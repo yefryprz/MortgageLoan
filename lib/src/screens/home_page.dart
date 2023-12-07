@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/models/Loan_model.dart';
 import 'package:mortgageloan/src/widgets/card_widger.dart';
@@ -59,12 +59,12 @@ class _HomePageState extends State<HomePage> {
                 inputControl: rateInput),
             SizedBox(
               height: 56.0,
-              child: FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+              child: TextButton(
+                  // shape: RoundedRectangleBorder(
+                  //     borderRadius: BorderRadius.circular(10)),
                   child: Text("Calculate",
                       style: TextStyle(color: Colors.white, fontSize: 24.0)),
-                  color: Colors.cyan,
+                  // color: Colors.cyan,
                   onPressed: () async {
                     if (await validField()) {
                       setState(() => calc());
@@ -82,11 +82,11 @@ class _HomePageState extends State<HomePage> {
   void goToAmortization() async {
     if (await validField()) {
       Navigator.pushNamed(context, "amortization",
-        arguments: Loan(
-          amount: double.parse(controller.text.replaceAll(",", "")),
-          payment: _payment,
-          rate: double.parse(rateInput.text),
-          term: int.parse(termInput.text)));
+          arguments: Loan(
+              amount: double.parse(controller.text.replaceAll(",", "")),
+              payment: _payment,
+              rate: double.parse(rateInput.text),
+              term: int.parse(termInput.text)));
     }
   }
 
@@ -94,19 +94,19 @@ class _HomePageState extends State<HomePage> {
     double amount = double.parse(controller.text.replaceAll(",", ""));
     int term = int.parse(termInput.text);
     double rate = double.parse(rateInput.text);
-  
+
     var interest = rate / 100 / 12;
     var result = (1 - pow(1 + interest, term * -1)) / interest;
     this._payment = double.parse((amount / result).toStringAsFixed(2));
 
     loanRepo.insertRecord(Loan(
-      amount: double.parse(controller.text.replaceAll(",", "")),
-      payment: _payment,
-      rate: double.parse(rateInput.text),
-      term: int.parse(termInput.text)));
+        amount: double.parse(controller.text.replaceAll(",", "")),
+        payment: _payment,
+        rate: double.parse(rateInput.text),
+        term: int.parse(termInput.text)));
   }
 
-  Future<bool> validField({String message, bool showMessage = true}) async {
+  Future<bool> validField({String? message, bool showMessage = true}) async {
     if (controller.text.isEmpty ||
         termInput.text.isEmpty ||
         rateInput.text.isEmpty) {
