@@ -4,10 +4,12 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:mortgageloan/src/database/hive.dart';
-import 'package:mortgageloan/src/models/Loan_model.dart';
+import 'package:mortgageloan/src/models/loan_model.dart';
+import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/card_widger.dart';
 import 'package:mortgageloan/src/widgets/drawler_widget.dart';
 import 'package:mortgageloan/src/widgets/input_widget.dart';
+import 'package:upgrader/upgrader.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -16,7 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   double _payment = 0;
-  final controller = new MaskedTextController(mask: '000,000,000');
+  final controller = MaskedTextController(mask: '000,000,000');
   final termInput = TextEditingController();
   final rateInput = TextEditingController();
   final loanRepo = LoanData();
@@ -29,54 +31,62 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Calculator"),
-        actions: [
-          IconButton(
-              icon: Icon(Icons.cached_rounded),
-              onPressed: () => cleanFields(context))
-        ],
-      ),
-      drawer: CustomDrawler(),
-      body: Container(
-        margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-        child: ListView(
-          children: [
-            CustomInput(
-                label: "Loan Amount",
-                suffixIcon: Icon(Icons.attach_money),
-                inputType: TextInputType.number,
-                inputControl: controller),
-            CustomInput(
-                label: "Term (months)",
-                suffixIcon: Icon(Icons.calendar_today),
-                inputType: TextInputType.number,
-                inputControl: termInput),
-            CustomInput(
-                label: "Interest Rate",
-                suffixIcon: Icon(Icons.calculate_outlined),
-                inputType: TextInputType.number,
-                inputControl: rateInput),
-            SizedBox(
-              height: 56.0,
-              child: TextButton(
-                  // shape: RoundedRectangleBorder(
-                  //     borderRadius: BorderRadius.circular(10)),
-                  child: Text("Calculate",
-                      style: TextStyle(color: Colors.white, fontSize: 24.0)),
-                  // color: Colors.cyan,
-                  onPressed: () async {
-                    if (await validField()) {
-                      setState(() => calc());
-                    }
-                  }),
-            ),
-            Divider(),
-            CustomCard(amount: _payment.toString(), acction: goToAmortization)
+        appBar: AppBar(
+          title: const Text("Calculator"),
+          actions: [
+            IconButton(
+                icon: const Icon(Icons.cached_rounded),
+                onPressed: () => cleanFields(context))
           ],
         ),
-      ),
-    );
+        drawer: CustomDrawler(),
+        body: UpgradeAlert(
+          upgrader: Upgrader(
+            showIgnore: false,
+            showLater: false,
+          ),
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            child: ListView(
+              children: [
+                CustomInput(
+                    label: "Loan Amount",
+                    suffixIcon: const Icon(Icons.attach_money),
+                    inputType: TextInputType.number,
+                    inputControl: controller),
+                CustomInput(
+                    label: "Term (months)",
+                    suffixIcon: const Icon(Icons.calendar_today),
+                    inputType: TextInputType.number,
+                    inputControl: termInput),
+                CustomInput(
+                    label: "Interest Rate",
+                    suffixIcon: const Icon(Icons.calculate_outlined),
+                    inputType: TextInputType.number,
+                    inputControl: rateInput),
+                SizedBox(
+                  height: 56.0,
+                  child: TextButton(
+                      child: const Text("Calculate",
+                          style: TextStyle(color: Colors.teal, fontSize: 24.0)),
+                      onPressed: () async {
+                        if (await validField()) {
+                          try {
+                            setState(() => calc());
+                          } catch (e) {
+                            throw new Exception(e.toString());
+                          }
+                        }
+                      }),
+                ),
+                const Divider(),
+                CustomCard(
+                    amount: _payment.toString(), acction: goToAmortization),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: CustomAdBanner());
   }
 
   void goToAmortization() async {
@@ -97,7 +107,7 @@ class _HomePageState extends State<HomePage> {
 
     var interest = rate / 100 / 12;
     var result = (1 - pow(1 + interest, term * -1)) / interest;
-    this._payment = double.parse((amount / result).toStringAsFixed(2));
+    _payment = double.parse((amount / result).toStringAsFixed(2));
 
     loanRepo.insertRecord(Loan(
         amount: double.parse(controller.text.replaceAll(",", "")),
@@ -116,20 +126,20 @@ class _HomePageState extends State<HomePage> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text("Warning"),
-                content:
-                    Text(message == null ? "All fields are required" : message),
+                title: const Text("Warning"),
+                content: Text(message ?? "All fields are required"),
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text("Ok"))
+                      child: const Text("Ok"))
                 ],
               );
             });
       }
       return false;
-    } else
+    } else {
       return true;
+    }
   }
 
   void cleanFields(BuildContext context) {

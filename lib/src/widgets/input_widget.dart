@@ -6,7 +6,7 @@ class CustomInput extends StatelessWidget {
   final TextInputType? inputType;
   final TextEditingController? inputControl;
 
-  CustomInput(
+  const CustomInput(
       {Key? key,
       this.label,
       this.suffixIcon,
@@ -16,7 +16,7 @@ class CustomInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 10, top: 5),
+      margin: const EdgeInsets.only(bottom: 10, top: 5),
       child: TextField(
           keyboardType: inputType,
           controller: inputControl,

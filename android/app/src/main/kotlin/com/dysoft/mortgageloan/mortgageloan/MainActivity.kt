@@ -1,4 +1,4 @@
-package com.dysoft.mortgageloan.mortgageloan
+package com.dysoft.mortgageloan
 
 import io.flutter.embedding.android.FlutterActivity
 

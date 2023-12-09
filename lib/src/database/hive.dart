@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:mortgageloan/src/models/Loan_model.dart';
+import 'package:mortgageloan/src/models/loan_model.dart';
 
 class LoanData {
   void insertRecord(Loan? loan) async {

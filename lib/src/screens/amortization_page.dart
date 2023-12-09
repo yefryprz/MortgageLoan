@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mortgageloan/src/models/Loan_model.dart';
+import 'package:mortgageloan/src/models/loan_model.dart';
+import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/datatable_widget.dart';
 
 class AmortizationPage extends StatefulWidget {
@@ -15,16 +16,18 @@ class _AmortizationPageState extends State<AmortizationPage> {
     final Loan args = ModalRoute.of(context)!.settings.arguments as Loan;
 
     return Scaffold(
-        appBar: AppBar(title: const Text("Amortization Table")),
-        body: SingleChildScrollView(
-          physics: const ScrollPhysics(),
-          child: SingleChildScrollView(
-              physics: const ScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              child: CustomDateTable(
-                  rowItems: generateTable(
-                      args.payment, args.amount, args.rate, args.term))),
-        ));
+      appBar: AppBar(title: const Text("Amortization Table")),
+      body: SingleChildScrollView(
+        physics: const ScrollPhysics(),
+        child: SingleChildScrollView(
+            physics: const ScrollPhysics(),
+            scrollDirection: Axis.horizontal,
+            child: CustomDateTable(
+                rowItems: generateTable(
+                    args.payment, args.amount, args.rate, args.term))),
+      ),
+      bottomNavigationBar: CustomAdBanner(),
+    );
   }
 
   List<DataRow> generateTable(

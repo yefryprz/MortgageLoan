@@ -4,7 +4,7 @@ class CustomCard extends StatefulWidget {
   final String? amount;
   final Function? acction;
 
-  CustomCard({Key? key, this.amount, this.acction}) : super(key: key);
+  const CustomCard({Key? key, this.amount, this.acction}) : super(key: key);
 
   @override
   _CustomCardState createState() => _CustomCardState();
@@ -24,7 +24,7 @@ class _CustomCardState extends State<CustomCard> {
           )),
           const SizedBox(height: 15.0),
           Text(
-            widget.amount!.length == 0 ? "0" : '${widget.amount}',
+            widget.amount!.isEmpty ? "0" : '${widget.amount}',
             style: const TextStyle(color: Colors.cyan, fontSize: 50.0),
           ),
           const SizedBox(height: 10.0),
