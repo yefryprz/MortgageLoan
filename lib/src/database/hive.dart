@@ -2,6 +2,8 @@ import 'package:hive/hive.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
 
 class LoanData {
+  var adKey = "adCount";
+
   void insertRecord(Loan? loan) async {
     final db = await Hive.openBox("loan");
     loan!.id = db.length + 1;
@@ -29,5 +31,23 @@ class LoanData {
   void deleteAllRecord() async {
     final db = await Hive.openBox("loan");
     await db.clear();
+  }
+
+  void AdCountUp() async {
+    final db = await Hive.openBox("ads");
+    final records = db.get(adKey) ?? 0;
+    await db.delete(adKey);
+    db.put(adKey, records + 1);
+  }
+
+  Future<int> getAdCount() async {
+    final db = await Hive.openBox("ads");
+    final counter = db.get(adKey) ?? 0;
+    return counter;
+  }
+
+  void resetAdCount() async {
+    final db = await Hive.openBox("ads");
+    db.clear();
   }
 }

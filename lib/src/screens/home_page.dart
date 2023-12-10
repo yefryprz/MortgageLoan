@@ -3,6 +3,7 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
@@ -22,6 +23,8 @@ class _HomePageState extends State<HomePage> {
   final termInput = TextEditingController();
   final rateInput = TextEditingController();
   final loanRepo = LoanData();
+
+  InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
@@ -72,7 +75,10 @@ class _HomePageState extends State<HomePage> {
                       onPressed: () async {
                         if (await validField()) {
                           try {
-                            setState(() => calc());
+                            setState(() {
+                              _loadInterstitialAd();
+                              calc();
+                            });
                           } catch (e) {
                             throw new Exception(e.toString());
                           }
@@ -81,7 +87,10 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const Divider(),
                 CustomCard(
-                    amount: _payment.toString(), acction: goToAmortization),
+                    amount: _payment.toString(),
+                    acction: () async {
+                      goToAmortization();
+                    }),
               ],
             ),
           ),
@@ -89,14 +98,47 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: CustomAdBanner());
   }
 
+  void _loadInterstitialAd() async {
+    await InterstitialAd.load(
+      adUnitId: "",
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _interstitialAd = ad;
+          });
+
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              loanRepo.resetAdCount();
+              print('Ad showed successful');
+            },
+          );
+        },
+        onAdFailedToLoad: (err) {
+          print('Failed to load an interstitial ad: ${err.message}');
+        },
+      ),
+    );
+  }
+
   void goToAmortization() async {
     if (await validField()) {
+      var qty = await loanRepo.getAdCount();
+
+      if (qty >= 5) {
+        _interstitialAd?.show();
+      } else {
+        loanRepo.AdCountUp();
+      }
+
       Navigator.pushNamed(context, "amortization",
           arguments: Loan(
-              amount: double.parse(controller.text.replaceAll(",", "")),
-              payment: _payment,
-              rate: double.parse(rateInput.text),
-              term: int.parse(termInput.text)));
+            amount: double.parse(controller.text.replaceAll(",", "")),
+            payment: _payment,
+            rate: double.parse(rateInput.text),
+            term: int.parse(termInput.text),
+          ));
     }
   }
 
