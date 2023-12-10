@@ -21,7 +21,7 @@ class _CustomDrawlerState extends State<CustomDrawler> {
         child: Column(children: [
       Container(
         width: double.infinity,
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         color: Theme.of(context).primaryColor,
         child: Center(
           child: Column(
@@ -29,15 +29,16 @@ class _CustomDrawlerState extends State<CustomDrawler> {
               Container(
                   width: 100,
                   height: 100,
-                  margin: EdgeInsets.only(top: 30, bottom: 10),
-                  decoration: BoxDecoration(
+                  margin: const EdgeInsets.only(top: 30, bottom: 10),
+                  decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       image: DecorationImage(
                           image: AssetImage("assets/logo.png"),
                           fit: BoxFit.fill))),
-              Text("Mortgage Loan",
+              const Text("Mortgage Loan",
                   style: TextStyle(fontSize: 25, color: Colors.white)),
-              Text("Version: $_appVersion", style: TextStyle(color: Colors.white))
+              Text("Version: $_appVersion",
+                  style: const TextStyle(color: Colors.white))
             ],
           ),
         ),

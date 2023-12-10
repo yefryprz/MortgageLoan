@@ -1,11 +1,17 @@
 class Loan {
-  int id;
-  double amount;
-  double payment;
-  double rate;
-  int term;
+  int? id;
+  double? amount;
+  double? payment;
+  double? rate;
+  int? term;
 
-  Loan({this.id, this.amount, this.payment, this.rate, this.term});
+  Loan({
+    this.id,
+    this.amount,
+    this.payment,
+    this.rate,
+    this.term,
+  });
 
   Map<String, dynamic> toMap() {
     return {

@@ -6,7 +6,7 @@ import 'package:mortgageloan/src/screens/home_page.dart';
 Map<String, WidgetBuilder> routes() {
   return <String, WidgetBuilder>{
     "/": (BuildContext contet) => HomePage(),
-    "amortization": (BuildContext context) => AmortizationPage(),
+    "amortization": (BuildContext context) => const AmortizationPage(),
     "history": (BuildContext context) => HistoryPage()
   };
 }
