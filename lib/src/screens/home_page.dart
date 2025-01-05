@@ -100,7 +100,7 @@ class _HomePageState extends State<HomePage> {
 
   void _loadInterstitialAd() async {
     await InterstitialAd.load(
-      adUnitId: "",
+      adUnitId: "adkey",
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -126,7 +126,7 @@ class _HomePageState extends State<HomePage> {
     if (await validField()) {
       var qty = await loanRepo.getAdCount();
 
-      if (qty >= 5) {
+      if (qty >= 3) {
         _interstitialAd?.show();
       } else {
         loanRepo.AdCountUp();
