@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:mortgageloan/src/models/compound_interest_model.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
 
 class LoanData {
@@ -19,7 +20,8 @@ class LoanData {
           amount: records[index]["amount"],
           payment: records[index]["payment"],
           rate: records[index]["rate"],
-          term: records[index]["term"]);
+          term: records[index]["term"],
+          totalInterest: records[index]["totalInterest"] ?? 0.0);
     });
   }
 
@@ -49,5 +51,49 @@ class LoanData {
   void resetAdCount() async {
     final db = await Hive.openBox("ads");
     db.clear();
+  }
+
+  Future<void> saveCompoundInterest(CompoundInterest calculation) async {
+    final box = await Hive.openBox("compound_interest");
+    calculation.id = box.length + 1;
+    await box.put(calculation.id, calculation.toMap());
+  }
+
+  Future<List<CompoundInterest>> getCompoundInterestHistory() async {
+    final box = await Hive.openBox("compound_interest");
+    final records = box.values.toList();
+    return List.generate(records.length, (index) {
+      return CompoundInterest(
+        id: records[index]["id"],
+        principal: records[index]["principal"],
+        rate: records[index]["rate"],
+        years: records[index]["years"],
+        result: records[index]["result"],
+        date: records[index]["date"] != null
+            ? DateTime.parse(records[index]["date"])
+            : null,
+      );
+    }).reversed.toList();
+  }
+
+  Future<void> deleteCompoundInterest(int? id) async {
+    if (id == null) return;
+    final box = await Hive.openBox("compound_interest");
+    await box.delete(id);
+  }
+
+  Future<void> deleteAllCompoundInterest() async {
+    final box = await Hive.openBox("compound_interest");
+    await box.clear();
+  }
+
+  Future<T?> getValue<T>(String key) async {
+    final box = await Hive.openBox('app_data');
+    return box.get(key) as T?;
+  }
+
+  Future<void> setValue<T>(String key, T value) async {
+    final box = await Hive.openBox('app_data');
+    await box.put(key, value);
   }
 }

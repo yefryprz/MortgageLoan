@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class CustomDrawler extends StatefulWidget {
+class CustomDrawer extends StatefulWidget {
   @override
-  State<CustomDrawler> createState() => _CustomDrawlerState();
+  State<CustomDrawer> createState() => _CustomDrawerState();
 }
 
-class _CustomDrawlerState extends State<CustomDrawler> {
+class _CustomDrawerState extends State<CustomDrawer> {
   String _appVersion = "";
 
   @override
@@ -44,11 +44,27 @@ class _CustomDrawlerState extends State<CustomDrawler> {
         ),
       ),
       ListTile(
+          key: Key('calculate_loan'),
           onTap: () => Navigator.popAndPushNamed(context, "/"),
           leading: Icon(Icons.keyboard, color: Theme.of(context).primaryColor),
           title: Text("Calculate Loan",
               style: TextStyle(color: Colors.grey[700], fontSize: 18))),
       ListTile(
+          key: Key('compound_interest'),
+          onTap: () => Navigator.popAndPushNamed(context, "compound"),
+          leading:
+              Icon(Icons.trending_up, color: Theme.of(context).primaryColor),
+          title: Text("Compound Interest",
+              style: TextStyle(color: Colors.grey[700], fontSize: 18))),
+      // ListTile(
+      //     key: Key('currency_converter'),
+      //     onTap: () => Navigator.popAndPushNamed(context, "currency"),
+      //     leading: Icon(Icons.currency_exchange,
+      //         color: Theme.of(context).primaryColor),
+      //     title: Text("Currency Converter",
+      //         style: TextStyle(color: Colors.grey[700], fontSize: 18))),
+      ListTile(
+          key: Key('history'),
           onTap: () => Navigator.popAndPushNamed(context, "history"),
           leading: Icon(Icons.history, color: Theme.of(context).primaryColor),
           title: Text("History",
