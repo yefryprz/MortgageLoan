@@ -51,7 +51,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
 
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: "ca-app-pub-4574158711047577/2851708247",
+      adUnitId: "",
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
