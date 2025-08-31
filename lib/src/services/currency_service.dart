@@ -60,22 +60,27 @@ class CurrencyService {
         final Map<String, dynamic> data = json.decode(response.body);
         final List<dynamic> currencies = data['response'] ?? [];
 
-        Map<String, String> currencyMap = {};
+        // Crear un mapa temporal para ordenar por nombre
+        Map<String, Map<String, String>> tempMap = {};
         for (var currency in currencies) {
           final String shortCode = currency['short_code'] ?? '';
           final String name = currency['name'] ?? '';
           if (shortCode.isNotEmpty && name.isNotEmpty) {
-            currencyMap[shortCode] = name;
+            tempMap[name] = {'shortCode': shortCode, 'name': name};
           }
         }
 
-        // Ordenar el mapa por el valor (nombre de la moneda) en orden alfabético
-        final sortedCurrencyMap = Map<String, String>.fromEntries(
-          currencyMap.entries.toList()
-            ..sort((a, b) => a.value.compareTo(b.value)),
-        );
+        // Ordenar las claves (nombres) alfabéticamente
+        final sortedKeys = tempMap.keys.toList()..sort();
 
-        return sortedCurrencyMap;
+        // Crear el mapa final ordenado
+        Map<String, String> currencyMap = {};
+        for (var key in sortedKeys) {
+          final item = tempMap[key]!;
+          currencyMap[item['shortCode']!] = item['name']!;
+        }
+
+        return currencyMap;
       } else {
         throw Exception('Failed to load currencies: ${response.statusCode}');
       }

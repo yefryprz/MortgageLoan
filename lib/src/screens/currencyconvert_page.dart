@@ -3,6 +3,8 @@ import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:mortgageloan/src/services/currency_service.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mortgageloan/src/database/hive.dart';
 
 class CurrencyConvertPage extends StatefulWidget {
   @override
@@ -23,6 +25,10 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   Map<String, String> _availableCurrencies = {};
   DateTime? _selectedDate;
 
+  InterstitialAd? _interstitialAd;
+  final LoanData _loanRepo =
+      LoanData(); // Reusing LoanData for ad count methods
+
   final _currencyFormat = intl.NumberFormat.currency(
     locale: 'en_US',
     symbol: '',
@@ -32,7 +38,52 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   @override
   void initState() {
     super.initState();
+    _loadInterstitialAd();
     _loadCurrencies();
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: "ca-app-pub-4574158711047577/2851708247",
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              _interstitialAd = null;
+              _loanRepo.resetAdCount();
+              _loadInterstitialAd(); // Load the next ad
+            },
+          );
+        },
+        onAdFailedToLoad: (err) {
+          print('Failed to load an interstitial ad: ${err.message}');
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  Future<void> _showInterstitialAd() async {
+    if (_interstitialAd == null) {
+      print('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+
+    try {
+      await _interstitialAd!.show();
+    } catch (e) {
+      print('Error showing interstitial ad: $e');
+      _loadInterstitialAd(); // Try to load next ad
+    }
   }
 
   Future<void> _loadCurrencies() async {
@@ -60,7 +111,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
     }
   }
 
-  List<String> get _currencies => _availableCurrencies.keys.toList()..sort();
+  List<String> get _currencies => _availableCurrencies.keys.toList();
 
   Widget _buildCurrencyDropdown(
     String value,
@@ -185,10 +236,22 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.arrow_downward,
-          color: Colors.teal,
-          size: 30,
+        IconButton(
+          icon: Icon(
+            Icons.import_export, // Este icono muestra flechas arriba y abajo
+            color: Colors.teal,
+            size: 30,
+          ),
+          onPressed: () {
+            setState(() {
+              // Intercambiar las monedas
+              final temp = _fromCurrency;
+              _fromCurrency = _toCurrency;
+              _toCurrency = temp;
+              // Actualizar la conversión
+              _convertCurrency();
+            });
+          },
         ),
       ],
     );
@@ -363,10 +426,23 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
         _amount,
         _selectedDate,
       );
+
       setState(() {
         _result = result;
         _isLoading = false;
       });
+
+      // Ad logic
+      var adCount = await _loanRepo.getAdCount();
+      if (adCount >= 3) {
+        if (_interstitialAd != null) {
+          await _showInterstitialAd();
+        } else {
+          _loanRepo.resetAdCount();
+        }
+      } else {
+        _loanRepo.AdCountUp();
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error converting currency: $e')),
