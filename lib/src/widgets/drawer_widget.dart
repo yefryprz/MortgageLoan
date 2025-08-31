@@ -56,13 +56,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
               Icon(Icons.trending_up, color: Theme.of(context).primaryColor),
           title: Text("Compound Interest",
               style: TextStyle(color: Colors.grey[700], fontSize: 18))),
-      // ListTile(
-      //     key: Key('currency_converter'),
-      //     onTap: () => Navigator.popAndPushNamed(context, "currency"),
-      //     leading: Icon(Icons.currency_exchange,
-      //         color: Theme.of(context).primaryColor),
-      //     title: Text("Currency Converter",
-      //         style: TextStyle(color: Colors.grey[700], fontSize: 18))),
+      ListTile(
+          key: Key('currency_converter'),
+          onTap: () => Navigator.popAndPushNamed(context, "currency"),
+          leading: Icon(Icons.currency_exchange,
+              color: Theme.of(context).primaryColor),
+          title: Text("Currency Converter",
+              style: TextStyle(color: Colors.grey[700], fontSize: 18))),
       ListTile(
           key: Key('history'),
           onTap: () => Navigator.popAndPushNamed(context, "history"),

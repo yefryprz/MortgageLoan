@@ -2,28 +2,44 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CurrencyService {
-  static const String _baseUrl =
-      'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest';
+  static const String _baseUrl = 'https://api.currencybeacon.com/v1';
+  static const String _bearerToken = 'mvhREoY2f8UjpJ45vjT7RVn7JSvihea4';
 
   Future<double> convertCurrency(
       String fromCurrency, String toCurrency, double amount,
       [DateTime? date]) async {
     try {
-      final dateStr = date != null
-          ? '/${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'
-          : '/latest';
+      // Formatear la fecha si se proporciona, de lo contrario usar la fecha actual
+      final String dateStr = date != null
+          ? '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'
+          : '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}';
+
+      final queryParams = {
+        'base': fromCurrency,
+        'symbols': toCurrency,
+        'date': dateStr,
+      };
 
       final response = await http.get(
-        Uri.parse(
-            '$_baseUrl$dateStr/currencies/$fromCurrency/$toCurrency.json'),
+        Uri.parse('$_baseUrl/historical').replace(queryParameters: queryParams),
+        headers: {
+          'Authorization': 'Bearer $_bearerToken',
+          'Content-Type': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final rate = data[toCurrency] as double;
+        final Map<String, dynamic> rates = data['response']['rates'] ?? {};
+        final double rate = rates[toCurrency]?.toDouble() ?? 0.0;
+
+        if (rate == 0.0) {
+          throw Exception('Exchange rate not found for $toCurrency');
+        }
+
         return amount * rate;
       } else {
-        throw Exception('Failed to load exchange rate');
+        throw Exception('Failed to load exchange rate: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error converting currency: $e');
@@ -33,15 +49,35 @@ class CurrencyService {
   Future<Map<String, String>> getAvailableCurrencies() async {
     try {
       final response = await http.get(
-        Uri.parse(
-            'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.json'),
+        Uri.parse('$_baseUrl/currencies'),
+        headers: {
+          'Authorization': 'Bearer $_bearerToken',
+          'Content-Type': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        return Map<String, String>.from(data);
+        final List<dynamic> currencies = data['response'] ?? [];
+
+        Map<String, String> currencyMap = {};
+        for (var currency in currencies) {
+          final String shortCode = currency['short_code'] ?? '';
+          final String name = currency['name'] ?? '';
+          if (shortCode.isNotEmpty && name.isNotEmpty) {
+            currencyMap[shortCode] = name;
+          }
+        }
+
+        // Ordenar el mapa por el valor (nombre de la moneda) en orden alfabético
+        final sortedCurrencyMap = Map<String, String>.fromEntries(
+          currencyMap.entries.toList()
+            ..sort((a, b) => a.value.compareTo(b.value)),
+        );
+
+        return sortedCurrencyMap;
       } else {
-        throw Exception('Failed to load currencies');
+        throw Exception('Failed to load currencies: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error fetching currencies: $e');

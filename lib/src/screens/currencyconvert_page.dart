@@ -39,9 +39,12 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
     setState(() => _isCurrenciesLoading = true);
     try {
       final currencies = await _currencyService.getAvailableCurrencies();
+
       setState(() {
         _availableCurrencies = currencies;
         _isCurrenciesLoading = false;
+
+        // Verificar si las monedas por defecto están disponibles
         if (!currencies.containsKey(_fromCurrency)) {
           _fromCurrency = currencies.keys.first;
         }
@@ -104,7 +107,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
           items: _currencies.map((String currency) {
             return DropdownMenuItem(
               value: currency,
-              child: Text(currency),
+              child: Text(_availableCurrencies[currency] ?? currency),
             );
           }).toList(),
           onChanged: onChanged,
@@ -175,6 +178,19 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCurrencyFlow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.arrow_downward,
+          color: Colors.teal,
+          size: 30,
+        ),
+      ],
     );
   }
 
@@ -255,37 +271,35 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _buildCurrencyDropdown(
-                      _fromCurrency,
-                      'From',
-                      (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            _fromCurrency = newValue;
-                            _convertCurrency();
-                          });
-                        }
-                      },
-                    ),
+                  _buildCurrencyDropdown(
+                    _fromCurrency,
+                    'From',
+                    (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _fromCurrency = newValue;
+                          _convertCurrency();
+                        });
+                      }
+                    },
                   ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: _buildCurrencyDropdown(
-                      _toCurrency,
-                      'To',
-                      (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            _toCurrency = newValue;
-                            _convertCurrency();
-                          });
-                        }
-                      },
-                    ),
+                  SizedBox(height: 16),
+                  _buildCurrencyFlow(),
+                  SizedBox(height: 16),
+                  _buildCurrencyDropdown(
+                    _toCurrency,
+                    'To',
+                    (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _toCurrency = newValue;
+                          _convertCurrency();
+                        });
+                      }
+                    },
                   ),
                 ],
               ),
