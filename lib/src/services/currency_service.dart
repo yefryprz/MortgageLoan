@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CurrencyService {
-  static const String _baseUrl = '';
-  static const String _bearerToken = '';
+  static const String _baseUrl = 'https://api.currencybeacon.com/v1';
+  static const String _bearerToken = 'mvhREoY2f8UjpJ45vjT7RVn7JSvihea4';
 
   Future<double> convertCurrency(
       String fromCurrency, String toCurrency, double amount,
