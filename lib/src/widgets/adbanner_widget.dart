@@ -35,7 +35,7 @@ class _CustomAdBannerState extends State<CustomAdBanner> {
   initBannerAd() {
     bannerAd = new BannerAd(
         size: AdSize.banner,
-        adUnitId: "ca-app-pub-4574158711047577/3296197854",
+        adUnitId: "",
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             setState(() {

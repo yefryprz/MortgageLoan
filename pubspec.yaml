@@ -33,20 +33,20 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_masked_text2: ^0.9.1
-  package_info_plus: ^5.0.1
-  intl: ^0.17.0
+  package_info_plus: ^9.0.0
+  intl: ^0.20.2
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  upgrader: ^8.4.0
-  firebase_crashlytics: ^3.4.8
-  firebase_core: ^2.24.2
-  firebase_analytics: ^10.7.4
-  google_mobile_ads: ^4.0.0
+  upgrader: ^12.5.0
+  firebase_crashlytics: ^5.0.7
+  firebase_core: ^4.4.0
+  firebase_analytics: ^12.1.2
+  google_mobile_ads: ^6.0.0
   http: ^1.1.0
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
 
