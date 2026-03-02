@@ -2,14 +2,12 @@ import 'dart:math';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
-import 'package:mortgageloan/src/widgets/card_widger.dart';
-import 'package:mortgageloan/src/widgets/drawler_widget.dart';
-import 'package:mortgageloan/src/widgets/input_widget.dart';
+import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:upgrader/upgrader.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,150 +16,462 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _loanAmountController = TextEditingController();
   double _payment = 0;
-  final controller = MaskedTextController(mask: '000,000,000');
-  final termInput = TextEditingController();
-  final rateInput = TextEditingController();
+  double _loanAmount = 0;
+  int _loanPeriod = 5;
+  double _interestRate = 10.0;
+  double _totalInterest = 0.0;
+
   final loanRepo = LoanData();
+  final _currencyFormat = intl.NumberFormat.currency(
+    locale: 'id',
+    symbol: '\$ ',
+    decimalDigits: 2,
+  );
+  final _numberFormat = intl.NumberFormat("#,###", "en_US");
 
   InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
     super.initState();
+    _loanAmountController.text = _numberFormat.format(_loanAmount);
+    _loadInterstitialAd();
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    _loanAmountController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final upgrader = UpgradeAlert(
+      upgrader: Upgrader(),
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: CustomDrawer(),
         appBar: AppBar(
-          title: const Text("Calculator"),
-          actions: [
-            IconButton(
-                icon: const Icon(Icons.cached_rounded),
-                onPressed: () => cleanFields(context))
-          ],
-        ),
-        drawer: CustomDrawler(),
-        body: UpgradeAlert(
-          upgrader: Upgrader(
-            showIgnore: false,
-            showLater: false,
+          leading: IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            child: ListView(
-              children: [
-                CustomInput(
-                    label: "Loan Amount",
-                    suffixIcon: const Icon(Icons.attach_money),
-                    inputType: TextInputType.number,
-                    inputControl: controller),
-                CustomInput(
-                    label: "Term (months)",
-                    suffixIcon: const Icon(Icons.calendar_today),
-                    inputType: TextInputType.number,
-                    inputControl: termInput),
-                CustomInput(
-                    label: "Interest Rate",
-                    suffixIcon: const Icon(Icons.calculate_outlined),
-                    inputType: TextInputType.number,
-                    inputControl: rateInput),
-                SizedBox(
-                  height: 56.0,
-                  child: TextButton(
-                      child: const Text("Calculate",
-                          style: TextStyle(color: Colors.teal, fontSize: 24.0)),
-                      onPressed: () async {
-                        if (await validField()) {
-                          try {
-                            setState(() {
-                              _loadInterstitialAd();
-                              calc();
-                            });
-                          } catch (e) {
-                            throw new Exception(e.toString());
-                          }
-                        }
-                      }),
+          title: const Text("Loan Calculator"),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Loan Amount Card
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                    ),
+                  ],
                 ),
-                const Divider(),
-                CustomCard(
-                    amount: _payment.toString(),
-                    acction: () async {
-                      goToAmortization();
-                    }),
-              ],
-            ),
+                child: _buildSliderSection(
+                  title: 'Loan Amount',
+                  value: _loanAmount,
+                  formattedValue: _currencyFormat.format(_loanAmount),
+                  min: 0,
+                  max: 100000000, // Fixed maximum value
+                  divisions: 1000000,
+                  onChanged: (value) {
+                    setState(() {
+                      _loanAmount = value;
+                      calc();
+                    });
+                  },
+                ),
+              ),
+
+              SizedBox(height: 24),
+
+              // Interest Rate Card
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: _buildSliderSection(
+                  title: 'Interest Rate',
+                  value: _interestRate,
+                  formattedValue: '${_interestRate.toStringAsFixed(1)}%',
+                  min: 1,
+                  max: 30,
+                  divisions: 290,
+                  onChanged: (value) {
+                    setState(() {
+                      _interestRate = value;
+                      calc();
+                    });
+                  },
+                ),
+              ),
+
+              SizedBox(height: 24),
+
+              // Loan Period Card
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: _buildSliderSection(
+                  title: 'Loan Period',
+                  value: _loanPeriod.toDouble(),
+                  formattedValue: '$_loanPeriod Years',
+                  min: 1,
+                  max: 40,
+                  divisions: 40,
+                  onChanged: (value) {
+                    setState(() {
+                      _loanPeriod = value.round();
+                      calc();
+                    });
+                  },
+                ),
+              ),
+
+              SizedBox(height: 32),
+
+              // Monthly Payment Section
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Estimated monthly installments',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      _currencyFormat.format(_payment),
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Installment fees may change according to the verification results',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Apply Loan Button
+              SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => goToAmortization(),
+                  child: Text(
+                    'Generate Amortization',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        bottomNavigationBar: CustomAdBanner());
+        bottomNavigationBar: CustomAdBanner(),
+      ),
+    );
+
+    return upgrader;
   }
 
-  void _loadInterstitialAd() async {
-    await InterstitialAd.load(
+  String _digits(String value) {
+    return value.replaceAll(RegExp(r'[^\d]'), '');
+  }
+
+  Widget _buildSliderSection({
+    required String title,
+    required double value,
+    required String formattedValue,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+    int? divisions,
+  }) {
+    if (title == 'Loan Amount') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8),
+          TextField(
+            controller: _loanAmountController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              prefixText: '\$ ',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onTap: () {
+              // Select all text when focused
+              _loanAmountController.selection = TextSelection(
+                baseOffset: 0,
+                extentOffset: _loanAmountController.text.length,
+              );
+            },
+            onChanged: (value) {
+              if (value.isEmpty) {
+                setState(() {
+                  _loanAmount = 0;
+                  calc();
+                });
+
+                return;
+              }
+
+              String digitsOnly = _digits(value);
+              if (digitsOnly.isEmpty) return;
+
+              double amount = double.parse(digitsOnly);
+              if (amount > max) amount = max;
+
+              setState(() {
+                _loanAmount = amount;
+                _loanAmountController.text = _numberFormat.format(amount);
+                calc();
+              });
+            },
+          ),
+          SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: Colors.teal,
+              inactiveTrackColor: Colors.grey[200],
+              thumbColor: Colors.white,
+              overlayColor: Colors.teal.withOpacity(0.1),
+              trackHeight: 4.0,
+              thumbShape: RoundSliderThumbShape(
+                enabledThumbRadius: 12,
+                elevation: 4,
+              ),
+              overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
+            ),
+            child: Slider(
+              value: value,
+              min: min,
+              max: max,
+              divisions: divisions,
+              onChanged: (newValue) {
+                setState(() {
+                  _loanAmount = newValue;
+                  _loanAmountController.text = _numberFormat.format(newValue);
+                  calc();
+                });
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          formattedValue,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        SliderTheme(
+          data: SliderThemeData(
+            activeTrackColor: Colors.teal,
+            inactiveTrackColor: Colors.grey[200],
+            thumbColor: Colors.white,
+            overlayColor: Colors.teal.withOpacity(0.1),
+            trackHeight: 4.0,
+            thumbShape: RoundSliderThumbShape(
+              enabledThumbRadius: 12,
+              elevation: 4,
+            ),
+            overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
+          ),
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
       adUnitId: "",
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          setState(() {
-            _interstitialAd = ad;
-          });
-
+          _interstitialAd = ad;
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
+              _interstitialAd = null;
               loanRepo.resetAdCount();
-              print('Ad showed successful');
+              _loadInterstitialAd(); // Load the next ad
             },
           );
         },
         onAdFailedToLoad: (err) {
           print('Failed to load an interstitial ad: ${err.message}');
+          _interstitialAd = null;
         },
       ),
     );
+  }
+
+  Future<void> _showInterstitialAd() async {
+    if (_interstitialAd == null) {
+      print('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+
+    try {
+      await _interstitialAd!.show();
+    } catch (e) {
+      print('Error showing interstitial ad: $e');
+      _loadInterstitialAd(); // Try to load next ad
+    }
   }
 
   void goToAmortization() async {
     if (await validField()) {
       var qty = await loanRepo.getAdCount();
 
-      if (qty >= 5) {
-        _interstitialAd?.show();
+      final loan = Loan(
+        amount: _loanAmount,
+        payment: _payment,
+        rate: _interestRate,
+        term: _loanPeriod,
+        totalInterest: _totalInterest,
+      );
+
+      if (qty >= 3) {
+        if (_interstitialAd != null) {
+          await _showInterstitialAd();
+        } else {
+          loanRepo.resetAdCount();
+        }
       } else {
         loanRepo.AdCountUp();
       }
 
-      Navigator.pushNamed(context, "amortization",
-          arguments: Loan(
-            amount: double.parse(controller.text.replaceAll(",", "")),
-            payment: _payment,
-            rate: double.parse(rateInput.text),
-            term: int.parse(termInput.text),
-          ));
+      loanRepo.insertRecord(loan);
+      Navigator.pushNamed(context, "amortization", arguments: loan);
     }
   }
 
   void calc() {
-    double amount = double.parse(controller.text.replaceAll(",", ""));
-    int term = int.parse(termInput.text);
-    double rate = double.parse(rateInput.text);
+    try {
+      // Convert annual rate to monthly rate (e.g. 10% -> 0.00833)
+      var monthlyRate = _interestRate / 100 / 12;
 
-    var interest = rate / 100 / 12;
-    var result = (1 - pow(1 + interest, term * -1)) / interest;
-    _payment = double.parse((amount / result).toStringAsFixed(2));
+      // Convert years to months (e.g. 30 years -> 360 months)
+      var totalMonths = _loanPeriod * 12;
 
-    loanRepo.insertRecord(Loan(
-        amount: double.parse(controller.text.replaceAll(",", "")),
-        payment: _payment,
-        rate: double.parse(rateInput.text),
-        term: int.parse(termInput.text)));
+      // Calculate monthly payment using mortgage formula
+      var monthlyPayment = _loanAmount *
+          (monthlyRate * pow(1 + monthlyRate, totalMonths)) /
+          (pow(1 + monthlyRate, totalMonths) - 1);
+
+      // Calculate total interest
+      var totalAmount = monthlyPayment * totalMonths;
+      var totalInterest = totalAmount - _loanAmount;
+
+      setState(() {
+        _payment = monthlyPayment;
+        _totalInterest = totalInterest;
+      });
+    } catch (e) {
+      print('Error calculating payment: $e');
+      _payment = 0;
+      _totalInterest = 0;
+    }
   }
 
   Future<bool> validField({String? message, bool showMessage = true}) async {
-    if (controller.text.isEmpty ||
-        termInput.text.isEmpty ||
-        rateInput.text.isEmpty) {
+    if (_loanAmount <= 0 || _loanPeriod <= 0) {
       if (showMessage) {
         await showDialog(
             barrierDismissible: false,
@@ -186,9 +496,8 @@ class _HomePageState extends State<HomePage> {
 
   void cleanFields(BuildContext context) {
     setState(() {
-      controller.clear();
-      termInput.clear();
-      rateInput.clear();
+      _loanAmount = 0;
+      _loanPeriod = 0;
       _payment = 0;
     });
   }

@@ -4,6 +4,8 @@ class Loan {
   double? payment;
   double? rate;
   int? term;
+  double? totalInterest;
+  DateTime? date;
 
   Loan({
     this.id,
@@ -11,6 +13,8 @@ class Loan {
     this.payment,
     this.rate,
     this.term,
+    this.totalInterest,
+    this.date,
   });
 
   Map<String, dynamic> toMap() {
@@ -19,7 +23,9 @@ class Loan {
       "amount": amount,
       "payment": payment,
       "rate": rate,
-      "term": term
+      "term": term,
+      "totalInterest": totalInterest,
+      "date": date?.toIso8601String(),
     };
   }
 }
