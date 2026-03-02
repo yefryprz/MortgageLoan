@@ -18,16 +18,19 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _loanAmountController = TextEditingController();
-  double _payment = 0;
-  double _loanAmount = 0;
+  final TextEditingController _interestRateController = TextEditingController();
+  final TextEditingController _loanPeriodController = TextEditingController();
+
+  double _payment = 21247.04; // default match image
+  double _loanAmount = 1000000;
   int _loanPeriod = 5;
   double _interestRate = 10.0;
   double _totalInterest = 0.0;
 
   final loanRepo = LoanData();
   final _currencyFormat = intl.NumberFormat.currency(
-    locale: 'id',
-    symbol: '\$ ',
+    locale: 'en_US',
+    symbol: '\$',
     decimalDigits: 2,
   );
   final _numberFormat = intl.NumberFormat("#,###", "en_US");
@@ -38,6 +41,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loanAmountController.text = _numberFormat.format(_loanAmount);
+    _interestRateController.text = _interestRate.toStringAsFixed(1);
+    _loanPeriodController.text = _loanPeriod.toString();
+    calc();
     _loadInterstitialAd();
   }
 
@@ -45,6 +51,8 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _interstitialAd?.dispose();
     _loanAmountController.dispose();
+    _interestRateController.dispose();
+    _loanPeriodController.dispose();
     super.dispose();
   }
 
@@ -54,179 +62,132 @@ class _HomePageState extends State<HomePage> {
       upgrader: Upgrader(),
       child: Scaffold(
         key: _scaffoldKey,
+        backgroundColor: const Color(0xFFF6F8F9),
         drawer: CustomDrawer(),
         appBar: AppBar(
+          backgroundColor: const Color(0xFFF6F8F9),
+          elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.menu),
+            icon: Icon(Icons.menu, color: const Color(0xFF2C3E50)),
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
-          title: const Text("Loan Calculator"),
+          title: const Text(
+            "Loan Calculator",
+            style: TextStyle(
+              color: Color(0xFF2C3E50),
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
           centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.history, color: const Color(0xFF2C3E50)),
+              onPressed: () => Navigator.pushNamed(context, "history"),
+            ),
+          ],
         ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(20),
+          physics: const BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Loan Amount Card
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: _buildSliderSection(
-                  title: 'Loan Amount',
-                  value: _loanAmount,
-                  formattedValue: _currencyFormat.format(_loanAmount),
-                  min: 0,
-                  max: 100000000, // Fixed maximum value
-                  divisions: 1000000,
-                  onChanged: (value) {
-                    setState(() {
-                      _loanAmount = value;
-                      calc();
-                    });
-                  },
-                ),
-              ),
-
-              SizedBox(height: 24),
+              _buildCard(child: _buildAmountSection()),
+              SizedBox(height: 16),
 
               // Interest Rate Card
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: _buildSliderSection(
-                  title: 'Interest Rate',
-                  value: _interestRate,
-                  formattedValue: '${_interestRate.toStringAsFixed(1)}%',
-                  min: 1,
-                  max: 30,
-                  divisions: 290,
-                  onChanged: (value) {
-                    setState(() {
-                      _interestRate = value;
-                      calc();
-                    });
-                  },
-                ),
-              ),
-
-              SizedBox(height: 24),
+              _buildCard(child: _buildInterestSection()),
+              SizedBox(height: 16),
 
               // Loan Period Card
+              _buildCard(child: _buildPeriodSection()),
+              SizedBox(height: 24),
+
+              // Estimated Monthly Installment
               Container(
-                padding: EdgeInsets.all(16),
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 10,
+                      color: const Color(0xFF40E0D0).withValues(alpha: 0.05),
+                      spreadRadius: 5,
+                      blurRadius: 20,
+                      offset: Offset(0, 5),
                     ),
                   ],
                 ),
-                child: _buildSliderSection(
-                  title: 'Loan Period',
-                  value: _loanPeriod.toDouble(),
-                  formattedValue: '$_loanPeriod Years',
-                  min: 1,
-                  max: 40,
-                  divisions: 40,
-                  onChanged: (value) {
-                    setState(() {
-                      _loanPeriod = value.round();
-                      calc();
-                    });
-                  },
-                ),
-              ),
-
-              SizedBox(height: 32),
-
-              // Monthly Payment Section
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Estimated monthly installments',
+                      'Estimated Monthly Installment',
                       style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 12),
                     Text(
                       _currencyFormat.format(_payment),
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 38,
                         fontWeight: FontWeight.bold,
-                        color: Colors.teal,
+                        color: const Color(0xFF32D3B8),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 12),
                     Text(
-                      'Installment fees may change according to the verification results',
+                      'Fees and taxes may apply based\non your region.',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 13,
+                        height: 1.4,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // Apply Loan Button
-              SizedBox(height: 24),
-              SizedBox(
+              SizedBox(height: 30),
+
+              // Generate Button
+              Container(
                 width: double.infinity,
-                height: 50,
+                height: 60,
                 child: ElevatedButton(
                   onPressed: () => goToAmortization(),
-                  child: Text(
-                    'Generate Amortization',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
+                    backgroundColor: const Color(0xFF32D3B8),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    elevation: 0,
+                    elevation: 4,
+                    shadowColor: const Color(0xFF32D3B8).withValues(alpha: 0.4),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Generate Amortization Schedule',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                    ],
                   ),
                 ),
               ),
+              SizedBox(height: 20),
             ],
           ),
         ),
@@ -237,150 +198,357 @@ class _HomePageState extends State<HomePage> {
     return upgrader;
   }
 
-  String _digits(String value) {
-    return value.replaceAll(RegExp(r'[^\d]'), '');
-  }
-
-  Widget _buildSliderSection({
-    required String title,
-    required double value,
-    required String formattedValue,
-    required double min,
-    required double max,
-    required ValueChanged<double> onChanged,
-    int? divisions,
-  }) {
-    if (title == 'Loan Amount') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 8),
-          TextField(
-            controller: _loanAmountController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              prefixText: '\$ ',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onTap: () {
-              // Select all text when focused
-              _loanAmountController.selection = TextSelection(
-                baseOffset: 0,
-                extentOffset: _loanAmountController.text.length,
-              );
-            },
-            onChanged: (value) {
-              if (value.isEmpty) {
-                setState(() {
-                  _loanAmount = 0;
-                  calc();
-                });
-
-                return;
-              }
-
-              String digitsOnly = _digits(value);
-              if (digitsOnly.isEmpty) return;
-
-              double amount = double.parse(digitsOnly);
-              if (amount > max) amount = max;
-
-              setState(() {
-                _loanAmount = amount;
-                _loanAmountController.text = _numberFormat.format(amount);
-                calc();
-              });
-            },
-          ),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: Colors.teal,
-              inactiveTrackColor: Colors.grey[200],
-              thumbColor: Colors.white,
-              overlayColor: Colors.teal.withOpacity(0.1),
-              trackHeight: 4.0,
-              thumbShape: RoundSliderThumbShape(
-                enabledThumbRadius: 12,
-                elevation: 4,
-              ),
-              overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
-            ),
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              divisions: divisions,
-              onChanged: (newValue) {
-                setState(() {
-                  _loanAmount = newValue;
-                  _loanAmountController.text = _numberFormat.format(newValue);
-                  calc();
-                });
-              },
-            ),
+  Widget _buildCard({required Widget child}) {
+    return Container(
+      padding: EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            spreadRadius: 0,
+            blurRadius: 15,
+            offset: Offset(0, 4),
           ),
         ],
-      );
-    }
+      ),
+      child: child,
+    );
+  }
 
+  Widget _buildAmountSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          'Loan Amount',
           style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
+            color: Color(0xFF6B7280),
+            fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
         ),
-        SizedBox(height: 8),
-        Text(
-          formattedValue,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+        SizedBox(height: 16),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF9FAFB),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Text(
+                '\$',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _loanAmountController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (value) {
+                    String clean = value.replaceAll(RegExp(r'[^0-9]'), '');
+                    if (clean.isEmpty) {
+                      _loanAmount = 0;
+                    } else {
+                      _loanAmount = double.parse(clean);
+                      if (_loanAmount > 5000000) _loanAmount = 5000000;
+                    }
+                    setState(() {
+                      calc();
+                    });
+                  },
+                  onSubmitted: (value) {
+                    _loanAmountController.text = _numberFormat.format(
+                      _loanAmount,
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
-        SliderTheme(
-          data: SliderThemeData(
-            activeTrackColor: Colors.teal,
-            inactiveTrackColor: Colors.grey[200],
-            thumbColor: Colors.white,
-            overlayColor: Colors.teal.withOpacity(0.1),
-            trackHeight: 4.0,
-            thumbShape: RoundSliderThumbShape(
-              enabledThumbRadius: 12,
-              elevation: 4,
+        SizedBox(height: 20),
+        _buildCustomSlider(
+          value: _loanAmount,
+          min: 1000,
+          max: 5000000,
+          onChanged: (val) {
+            setState(() {
+              _loanAmount = val;
+              _loanAmountController.text = _numberFormat.format(val);
+              calc();
+            });
+          },
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '\$1k',
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
             ),
-            overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
-          ),
-          child: Slider(
-            value: value,
-            min: min,
-            max: max,
-            divisions: divisions,
-            onChanged: onChanged,
-          ),
+            Text(
+              '\$5M',
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+            ),
+          ],
         ),
       ],
     );
   }
 
+  Widget _buildInterestSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Interest Rate',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Container(
+              width: 100,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _interestRateController,
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF32D3B8),
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      onChanged: (value) {
+                        double? val = double.tryParse(value);
+                        if (val != null) {
+                          if (val > 20) val = 20;
+                          if (val < 1) val = 1;
+                          _interestRate = val;
+                          setState(() {
+                            calc();
+                          });
+                        }
+                      },
+                      onSubmitted: (value) {
+                        _interestRateController.text =
+                            _interestRate.toStringAsFixed(1);
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    '%',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 20),
+        _buildCustomSlider(
+          value: _interestRate,
+          min: 1,
+          max: 20,
+          onChanged: (val) {
+            setState(() {
+              _interestRate = val;
+              _interestRateController.text = val.toStringAsFixed(1);
+              calc();
+            });
+          },
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '1%',
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+            ),
+            Text(
+              '20%',
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPeriodSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Loan Period',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Container(
+              width: 120,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _loanPeriodController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      onChanged: (value) {
+                        int? val = int.tryParse(value);
+                        if (val != null) {
+                          if (val > 30) val = 30;
+                          if (val < 1) val = 1;
+                          _loanPeriod = val;
+                          setState(() {
+                            calc();
+                          });
+                        }
+                      },
+                      onSubmitted: (value) {
+                        _loanPeriodController.text = _loanPeriod.toString();
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'Years',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 20),
+        _buildCustomSlider(
+          value: _loanPeriod.toDouble(),
+          min: 1,
+          max: 30,
+          onChanged: (val) {
+            setState(() {
+              _loanPeriod = val.round();
+              _loanPeriodController.text = _loanPeriod.toString();
+              calc();
+            });
+          },
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '1 Yr',
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+            ),
+            Text(
+              '30 Yrs',
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomSlider({
+    required double value,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+  }) {
+    return SliderTheme(
+      data: SliderThemeData(
+        activeTrackColor: const Color(0xFFE5E7EB), // grey base
+        inactiveTrackColor: const Color(0xFFE5E7EB),
+        trackHeight: 4.0,
+        thumbShape: _CustomThumbShape(
+          color: const Color(0xFF32D3B8),
+        ), // teal outline thumb
+        overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
+        trackShape: _CustomTrackShape(
+          progress: (value - min) / (max - min),
+          color: const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Slider(
+        value: value.clamp(min, max),
+        min: min,
+        max: max,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: "",
+      adUnitId:
+          "", // Keep empty as in original code, usually handled via remote config or real id
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -389,12 +557,11 @@ class _HomePageState extends State<HomePage> {
             onAdDismissedFullScreenContent: (ad) {
               _interstitialAd = null;
               loanRepo.resetAdCount();
-              _loadInterstitialAd(); // Load the next ad
+              _loadInterstitialAd();
             },
           );
         },
         onAdFailedToLoad: (err) {
-          print('Failed to load an interstitial ad: ${err.message}');
           _interstitialAd = null;
         },
       ),
@@ -402,16 +569,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _showInterstitialAd() async {
-    if (_interstitialAd == null) {
-      print('Warning: attempt to show interstitial before loaded.');
-      return;
-    }
-
+    if (_interstitialAd == null) return;
     try {
       await _interstitialAd!.show();
     } catch (e) {
-      print('Error showing interstitial ad: $e');
-      _loadInterstitialAd(); // Try to load next ad
+      _loadInterstitialAd();
     }
   }
 
@@ -444,61 +606,130 @@ class _HomePageState extends State<HomePage> {
 
   void calc() {
     try {
-      // Convert annual rate to monthly rate (e.g. 10% -> 0.00833)
+      if (_loanAmount == 0) {
+        _payment = 0;
+        _totalInterest = 0;
+        return;
+      }
       var monthlyRate = _interestRate / 100 / 12;
-
-      // Convert years to months (e.g. 30 years -> 360 months)
       var totalMonths = _loanPeriod * 12;
 
-      // Calculate monthly payment using mortgage formula
       var monthlyPayment = _loanAmount *
           (monthlyRate * pow(1 + monthlyRate, totalMonths)) /
           (pow(1 + monthlyRate, totalMonths) - 1);
 
-      // Calculate total interest
       var totalAmount = monthlyPayment * totalMonths;
       var totalInterest = totalAmount - _loanAmount;
 
-      setState(() {
-        _payment = monthlyPayment;
-        _totalInterest = totalInterest;
-      });
+      _payment = monthlyPayment;
+      _totalInterest = totalInterest;
     } catch (e) {
-      print('Error calculating payment: $e');
       _payment = 0;
       _totalInterest = 0;
     }
   }
 
   Future<bool> validField({String? message, bool showMessage = true}) async {
-    if (_loanAmount <= 0 || _loanPeriod <= 0) {
+    if (_loanAmount <= 0 || _loanPeriod <= 0 || _interestRate <= 0) {
       if (showMessage) {
         await showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text("Warning"),
-                content: Text(message ?? "All fields are required"),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Ok"))
-                ],
-              );
-            });
+          barrierDismissible: false,
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Warning"),
+              content: Text(
+                message ?? "All fields are required and must be greater than 0",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Ok"),
+                ),
+              ],
+            );
+          },
+        );
       }
       return false;
-    } else {
-      return true;
     }
+    return true;
   }
+}
 
-  void cleanFields(BuildContext context) {
-    setState(() {
-      _loanAmount = 0;
-      _loanPeriod = 0;
-      _payment = 0;
-    });
+class _CustomTrackShape extends RoundedRectSliderTrackShape {
+  final double progress;
+  final Color color;
+  _CustomTrackShape({required this.progress, required this.color});
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset offset, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required TextDirection textDirection,
+    required Offset thumbCenter,
+    Offset? secondaryOffset,
+    bool isDiscrete = false,
+    bool isEnabled = false,
+    double additionalActiveTrackHeight = 2,
+  }) {
+    super.paint(
+      context,
+      offset,
+      parentBox: parentBox,
+      sliderTheme: sliderTheme,
+      enableAnimation: enableAnimation,
+      textDirection: textDirection,
+      thumbCenter: thumbCenter,
+      secondaryOffset: secondaryOffset,
+      isDiscrete: isDiscrete,
+      isEnabled: isEnabled,
+      additionalActiveTrackHeight: additionalActiveTrackHeight,
+    );
+  }
+}
+
+class _CustomThumbShape extends RoundSliderThumbShape {
+  final Color color;
+  _CustomThumbShape({required this.color})
+      : super(enabledThumbRadius: 12, pressedElevation: 8, elevation: 4);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final Canvas canvas = context.canvas;
+
+    // Outer shadow
+    final Path path = Path()
+      ..addOval(Rect.fromCircle(center: center, radius: enabledThumbRadius));
+    canvas.drawShadow(path, Colors.black, elevation, true);
+
+    // Inner white circle
+    final Paint fillPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, enabledThumbRadius, fillPaint);
+
+    // Outer teal border stroke
+    final Paint strokePaint = Paint()
+      ..color = color
+      ..strokeWidth = 3.0
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(center, enabledThumbRadius - 1.5, strokePaint);
   }
 }
