@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:mortgageloan/src/services/cache_service.dart';
 
 class CurrencyService {
   static const String _baseUrl = 'https://api.currencybeacon.com/v1';
@@ -124,6 +125,12 @@ class CurrencyService {
   }
 
   Future<Map<String, String>> getAvailableCurrencies() async {
+    final cachedCurrencies =
+        CacheService().get<Map<String, String>>('currencies');
+    if (cachedCurrencies != null) {
+      return cachedCurrencies;
+    }
+
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/currencies'),
@@ -152,6 +159,8 @@ class CurrencyService {
           final item = tempMap[key]!;
           currencyMap[item['shortCode']!] = item['name']!;
         }
+
+        CacheService().set('currencies', currencyMap);
 
         return currencyMap;
       } else {

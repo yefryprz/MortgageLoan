@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 
 class CompoundRow {
   final int year;
@@ -48,6 +49,7 @@ class CompoundBreakdownPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8F9),
+      bottomNavigationBar: CustomAdBanner(),
       body: Column(
         children: [
           _buildHeader(context),

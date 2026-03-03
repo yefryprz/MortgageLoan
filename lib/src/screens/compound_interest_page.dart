@@ -34,18 +34,15 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
 
   InterstitialAd? _interstitialAd;
   final loanRepo = LoanData();
-  int _calcCounter = 0;
-  static const String CALC_COUNTER_KEY = 'compound_calc_counter';
 
   @override
   void initState() {
     super.initState();
     _principalController.text = _numberFormat.format(_principal);
-    _rateController.text = _rate.toStringAsFixed(1);
+    _rateController.text = _rate.toStringAsFixed(2);
     _yearsController.text = _years.toString();
     calculate();
     _loadInterstitialAd();
-    _loadCalcCounter();
   }
 
   @override
@@ -57,17 +54,9 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
     super.dispose();
   }
 
-  Future<void> _loadCalcCounter() async {
-    _calcCounter = await loanRepo.getValue(CALC_COUNTER_KEY) ?? 0;
-  }
-
-  Future<void> _saveCalcCounter() async {
-    await loanRepo.setValue(CALC_COUNTER_KEY, _calcCounter);
-  }
-
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: "",
+      adUnitId: "ca-app-pub-4574158711047577/4568082033",
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -75,8 +64,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
               _interstitialAd = null;
-              _calcCounter = 0;
-              _saveCalcCounter();
+              loanRepo.resetAdCount("compoundCount");
               _loadInterstitialAd();
             },
           );
@@ -317,7 +305,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
                       }
                     },
                     onSubmitted: (value) {
-                      _rateController.text = _rate.toStringAsFixed(1);
+                      _rateController.text = _rate.toStringAsFixed(2);
                     },
                   ),
                 ),
@@ -342,7 +330,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
           onChanged: (val) {
             setState(() {
               _rate = val;
-              _rateController.text = val.toStringAsFixed(1);
+              _rateController.text = val.toStringAsFixed(2);
               calculate();
             });
           },
@@ -822,15 +810,16 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
       }
     }
 
-    _calcCounter++;
-    _saveCalcCounter();
-    if (_calcCounter >= 3) {
+    var adCount = await loanRepo.getAdCount("compoundCount");
+    if (adCount >= 2) {
+      // 3 clicks
       if (_interstitialAd != null) {
-        _showInterstitialAd();
+        await _showInterstitialAd();
       } else {
-        _calcCounter = 0;
-        _saveCalcCounter();
+        loanRepo.resetAdCount("compoundCount");
       }
+    } else {
+      loanRepo.AdCountUp("compoundCount");
     }
   }
 }

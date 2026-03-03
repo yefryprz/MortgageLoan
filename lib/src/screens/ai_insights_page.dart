@@ -1,7 +1,73 @@
 import 'package:flutter/material.dart';
 
-class AiInsightsPage extends StatelessWidget {
+import 'package:mortgageloan/src/database/hive.dart';
+import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+class AiInsightsPage extends StatefulWidget {
   const AiInsightsPage({Key? key}) : super(key: key);
+
+  @override
+  State<AiInsightsPage> createState() => _AiInsightsPageState();
+}
+
+class _AiInsightsPageState extends State<AiInsightsPage> {
+  InterstitialAd? _interstitialAd;
+  final loanRepo = LoanData();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterstitialAd();
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    super.dispose();
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: "ca-app-pub-4574158711047577/4568082033",
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              _interstitialAd = null;
+              loanRepo.resetAdCount("aiCount");
+              _loadInterstitialAd();
+            },
+          );
+        },
+        onAdFailedToLoad: (err) {
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleGenerateStrategy() async {
+    int adCount = await loanRepo.getAdCount("aiCount");
+    if (adCount >= 1) {
+      // 2 clicks
+      if (_interstitialAd != null) {
+        await _interstitialAd!.show();
+      } else {
+        loanRepo.resetAdCount("aiCount");
+      }
+    } else {
+      loanRepo.AdCountUp("aiCount");
+    }
+    // Perform any specific action if needed
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Strategy generated successfully!')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +132,7 @@ class AiInsightsPage extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _buildFloatingActions(),
+      bottomNavigationBar: CustomAdBanner(),
     );
   }
 
@@ -306,7 +373,7 @@ class AiInsightsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  "${(avgRate - userRate).toStringAsFixed(1)}% Better",
+                  "${(avgRate - userRate).toStringAsFixed(2)}% Better",
                   style: const TextStyle(
                       color: Color(0xFF16A34A),
                       fontSize: 12,
@@ -491,47 +558,47 @@ class AiInsightsPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  spreadRadius: 2,
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(25),
-                onTap: () {},
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.chat_bubble,
-                          color: Color(0xFF14EFCD), size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        "Chat with Advisor",
-                        style: TextStyle(
-                          color: Color(0xFF1F2937),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          // Container(
+          //   width: double.infinity,
+          //   decoration: BoxDecoration(
+          //     color: Colors.white,
+          //     borderRadius: BorderRadius.circular(25),
+          //     boxShadow: [
+          //       BoxShadow(
+          //         color: Colors.black.withValues(alpha: 0.05),
+          //         spreadRadius: 2,
+          //         blurRadius: 15,
+          //         offset: const Offset(0, 5),
+          //       ),
+          //     ],
+          //   ),
+          //   child: Material(
+          //     color: Colors.transparent,
+          //     child: InkWell(
+          //       borderRadius: BorderRadius.circular(25),
+          //       onTap: () {},
+          //       child: const Padding(
+          //         padding: EdgeInsets.symmetric(vertical: 16),
+          //         child: Row(
+          //           mainAxisAlignment: MainAxisAlignment.center,
+          //           children: [
+          //             Icon(Icons.chat_bubble,
+          //                 color: Color(0xFF14EFCD), size: 20),
+          //             SizedBox(width: 8),
+          //             Text(
+          //               "Chat with Advisor",
+          //               style: TextStyle(
+          //                 color: Color(0xFF1F2937),
+          //                 fontWeight: FontWeight.bold,
+          //                 fontSize: 16,
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
@@ -555,7 +622,7 @@ class AiInsightsPage extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(25),
-                onTap: () {},
+                onTap: _handleGenerateStrategy,
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Row(
@@ -565,7 +632,7 @@ class AiInsightsPage extends StatelessWidget {
                           color: Color(0xFF0F172A), size: 20),
                       SizedBox(width: 8),
                       Text(
-                        "Apply Strategy",
+                        "Generate Strategy",
                         style: TextStyle(
                           color: Color(0xFF0F172A),
                           fontWeight: FontWeight.bold,

@@ -35,22 +35,22 @@ class LoanData {
     await db.clear();
   }
 
-  void AdCountUp() async {
+  void AdCountUp(String key) async {
     final db = await Hive.openBox("ads");
-    final records = db.get(adKey) ?? 0;
-    await db.delete(adKey);
-    db.put(adKey, records + 1);
+    final records = db.get(key) ?? 0;
+    await db.delete(key);
+    db.put(key, records + 1);
   }
 
-  Future<int> getAdCount() async {
+  Future<int> getAdCount(String key) async {
     final db = await Hive.openBox("ads");
-    final counter = db.get(adKey) ?? 0;
+    final counter = db.get(key) ?? 0;
     return counter;
   }
 
-  void resetAdCount() async {
+  void resetAdCount(String key) async {
     final db = await Hive.openBox("ads");
-    db.clear();
+    await db.delete(key);
   }
 
   Future<void> saveCompoundInterest(CompoundInterest calculation) async {

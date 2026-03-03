@@ -30,6 +30,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
 
   Map<String, String> _availableCurrencies = {};
   DateTime? _selectedDate; // Optional custom date
+  String _lastConversionPair = "";
 
   String _selectedRange = '24H'; // 24H, 1W, 1M, 3M, 6M, YTD
   Map<String, double> _timeseriesData = {};
@@ -62,7 +63,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
 
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: "",
+      adUnitId: "ca-app-pub-4574158711047577/4568082033",
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -70,7 +71,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
               _interstitialAd = null;
-              _loanRepo.resetAdCount();
+              _loanRepo.resetAdCount("currencyCount");
               _loadInterstitialAd(); // Load the next ad
             },
           );
@@ -130,7 +131,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
             const SizedBox(height: 16),
             _buildCurrencyInsightsCard(),
             const SizedBox(height: 16),
-            // _buildDateOptions(), // Optional date picker as requested
+            _buildDateOptions(), // Optional date picker as requested
             const SizedBox(height: 30),
           ],
         ),
@@ -314,10 +315,14 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _isCurrenciesLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const Center(
+                              child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Color(0xFF3ac0b5)),
+                              ),
+                            )
                           : DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: _currencies.contains(currencyValue)
@@ -959,15 +964,20 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
         _isLoading = false;
       });
 
-      var adCount = await _loanRepo.getAdCount();
-      if (adCount >= 3) {
-        if (_interstitialAd != null) {
-          await _showInterstitialAd();
+      String currentConversionPair = "$_fromCurrency-$_toCurrency";
+      if (_lastConversionPair != currentConversionPair) {
+        _lastConversionPair = currentConversionPair;
+        var adCount = await _loanRepo.getAdCount("currencyCount");
+        if (adCount >= 4) {
+          // 5 conversions
+          if (_interstitialAd != null) {
+            await _showInterstitialAd();
+          } else {
+            _loanRepo.resetAdCount("currencyCount");
+          }
         } else {
-          _loanRepo.resetAdCount();
+          _loanRepo.AdCountUp("currencyCount");
         }
-      } else {
-        _loanRepo.AdCountUp();
       }
     } catch (e) {
       if (mounted) {

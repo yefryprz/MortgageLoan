@@ -5,6 +5,7 @@ import 'package:mortgageloan/src/models/compound_interest_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -19,6 +20,57 @@ class _HistoryPageState extends State<HistoryPage> {
   final NumberFormat _currencyFormat =
       NumberFormat.currency(locale: 'en_US', symbol: '\$');
   final DateFormat _timeFormat = DateFormat('h:mm a');
+
+  InterstitialAd? _interstitialAd;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterstitialAd();
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    super.dispose();
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: "ca-app-pub-4574158711047577/4568082033",
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              _interstitialAd = null;
+              loanRepo.resetAdCount("historyCount");
+              _loadInterstitialAd();
+            },
+          );
+        },
+        onAdFailedToLoad: (err) {
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleAdDetailNavigation(VoidCallback onNavigate) async {
+    onNavigate();
+    int adCount = await loanRepo.getAdCount("historyCount");
+    if (adCount >= 4) {
+      // 5 clicks
+      if (_interstitialAd != null) {
+        await _interstitialAd!.show();
+      } else {
+        loanRepo.resetAdCount("historyCount");
+      }
+    } else {
+      loanRepo.AdCountUp("historyCount");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -337,7 +389,7 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            "${data.term ?? 0}-year fixed rate mortgage at ${data.rate ?? 0}% APR.",
+            "${data.term ?? 0}-year fixed rate mortgage at ${(data.rate ?? 0).toStringAsFixed(2)}% APR.",
             style: const TextStyle(
               fontSize: 13,
               color: Color(0xFF6B7280),
@@ -415,8 +467,10 @@ class _HistoryPageState extends State<HistoryPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(context, 'amortization',
-                        arguments: data);
+                    _handleAdDetailNavigation(() {
+                      Navigator.pushNamed(context, 'amortization',
+                          arguments: data);
+                    });
                   },
                   icon: const Icon(Icons.calendar_month, size: 18),
                   label: const Text(
@@ -602,7 +656,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${data.rate?.toStringAsFixed(1) ?? '0.0'}%",
+                    "${data.rate?.toStringAsFixed(2) ?? '0.00'}%",
                     style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -655,14 +709,15 @@ class _HistoryPageState extends State<HistoryPage> {
                         'endBalance': currentBalance,
                       });
                     }
-
-                    Navigator.pushNamed(context, 'compound_breakdown',
-                        arguments: {
-                          'principal': data.principal ?? 0,
-                          'rate': data.rate ?? 0,
-                          'result': data.result ?? 0,
-                          'yearlyDetails': yearlyDetails,
-                        });
+                    _handleAdDetailNavigation(() {
+                      Navigator.pushNamed(context, 'compound_breakdown',
+                          arguments: {
+                            'principal': data.principal ?? 0,
+                            'rate': data.rate ?? 0,
+                            'result': data.result ?? 0,
+                            'yearlyDetails': yearlyDetails,
+                          });
+                    });
                   },
                   icon: const Icon(Icons.visibility_outlined, size: 18),
                   label: const Text(

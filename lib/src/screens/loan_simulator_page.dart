@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:mortgageloan/src/services/cache_service.dart';
+import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 
 class Country {
   final String name;
@@ -66,13 +68,31 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
 
   Future<void> _fetchCountries() async {
     try {
+      final cachedCountries = CacheService().get<List<Country>>('countries');
+      if (cachedCountries != null) {
+        setState(() {
+          _countries = cachedCountries;
+          _selectedCountry = _countries.firstWhere(
+            (c) => c.name == 'United States',
+            orElse: () => _countries.first,
+          );
+          _isLoadingCountries = false;
+        });
+        return;
+      }
+
       final response = await http.get(
           Uri.parse('https://restcountries.com/v3.1/all?fields=name,flags'));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        final List<Country> fetchedCountries =
+            data.map((json) => Country.fromJson(json)).toList();
+        fetchedCountries.sort((a, b) => a.name.compareTo(b.name));
+
+        CacheService().set('countries', fetchedCountries);
+
         setState(() {
-          _countries = data.map((json) => Country.fromJson(json)).toList();
-          _countries.sort((a, b) => a.name.compareTo(b.name));
+          _countries = fetchedCountries;
 
           // Try to set United States as default
           _selectedCountry = _countries.firstWhere(
@@ -200,6 +220,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8F9),
+      bottomNavigationBar: CustomAdBanner(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,

@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loanAmountController.text = _numberFormat.format(_loanAmount);
-    _interestRateController.text = _interestRate.toStringAsFixed(1);
+    _interestRateController.text = _interestRate.toStringAsFixed(2);
     _loanPeriodController.text = _loanPeriod.toString();
     calc();
     _loadInterstitialAd();
@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final upgrader = UpgradeAlert(
-      upgrader: Upgrader(),
+      upgrader: Upgrader(debugLogging: true),
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: const Color(0xFFF6F8F9),
@@ -368,7 +368,7 @@ class _HomePageState extends State<HomePage> {
                       },
                       onSubmitted: (value) {
                         _interestRateController.text =
-                            _interestRate.toStringAsFixed(1);
+                            _interestRate.toStringAsFixed(2);
                       },
                     ),
                   ),
@@ -394,7 +394,7 @@ class _HomePageState extends State<HomePage> {
           onChanged: (val) {
             setState(() {
               _interestRate = val;
-              _interestRateController.text = val.toStringAsFixed(1);
+              _interestRateController.text = val.toStringAsFixed(2);
               calc();
             });
           },
@@ -548,7 +548,7 @@ class _HomePageState extends State<HomePage> {
   void _loadInterstitialAd() {
     InterstitialAd.load(
       adUnitId:
-          "", // Keep empty as in original code, usually handled via remote config or real id
+          "ca-app-pub-4574158711047577/4568082033", // Keep empty as in original code, usually handled via remote config or real id
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -556,7 +556,7 @@ class _HomePageState extends State<HomePage> {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
               _interstitialAd = null;
-              loanRepo.resetAdCount();
+              loanRepo.resetAdCount("amortizationCount");
               _loadInterstitialAd();
             },
           );
@@ -579,7 +579,7 @@ class _HomePageState extends State<HomePage> {
 
   void goToAmortization() async {
     if (await validField()) {
-      var qty = await loanRepo.getAdCount();
+      var qty = await loanRepo.getAdCount("amortizationCount");
 
       final loan = Loan(
         amount: _loanAmount,
@@ -589,14 +589,14 @@ class _HomePageState extends State<HomePage> {
         totalInterest: _totalInterest,
       );
 
-      if (qty >= 3) {
+      if (qty >= 2) {
         if (_interstitialAd != null) {
           await _showInterstitialAd();
         } else {
-          loanRepo.resetAdCount();
+          loanRepo.resetAdCount("amortizationCount");
         }
       } else {
-        loanRepo.AdCountUp();
+        loanRepo.AdCountUp("amortizationCount");
       }
 
       loanRepo.insertRecord(loan);
