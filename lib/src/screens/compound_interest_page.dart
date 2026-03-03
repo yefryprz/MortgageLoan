@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/models/compound_interest_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
-import 'package:mortgageloan/src/widgets/drawer_widget.dart'; // Fix import path
+import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class CompoundInterestPage extends StatefulWidget {
@@ -14,17 +15,22 @@ class CompoundInterestPage extends StatefulWidget {
 class _CompoundInterestPageState extends State<CompoundInterestPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _principalController = TextEditingController();
-  double _principal = 0;
+  final TextEditingController _rateController = TextEditingController();
+  final TextEditingController _yearsController = TextEditingController();
+
+  double _principal = 1000000;
   double _rate = 5.0;
-  int _years = 5;
+  int _years = 10;
   double _result = 0;
   List<Map<String, dynamic>> _yearlyDetails = [];
 
   final _currencyFormat = intl.NumberFormat.currency(
-    locale: 'id',
-    symbol: '\$ ',
+    locale: 'en_US',
+    symbol: '\$',
     decimalDigits: 2,
   );
+
+  final _numberFormat = intl.NumberFormat("#,###", "en_US");
 
   InterstitialAd? _interstitialAd;
   final loanRepo = LoanData();
@@ -34,6 +40,10 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   @override
   void initState() {
     super.initState();
+    _principalController.text = _numberFormat.format(_principal);
+    _rateController.text = _rate.toStringAsFixed(1);
+    _yearsController.text = _years.toString();
+    calculate();
     _loadInterstitialAd();
     _loadCalcCounter();
   }
@@ -41,6 +51,9 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   @override
   void dispose() {
     _interstitialAd?.dispose();
+    _principalController.dispose();
+    _rateController.dispose();
+    _yearsController.dispose();
     super.dispose();
   }
 
@@ -69,7 +82,6 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
           );
         },
         onAdFailedToLoad: (err) {
-          print('Failed to load an interstitial ad: ${err.message}');
           _interstitialAd = null;
         },
       ),
@@ -77,14 +89,10 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   }
 
   Future<void> _showInterstitialAd() async {
-    if (_interstitialAd == null) {
-      print('Warning: attempt to show interstitial before loaded.');
-      return;
-    }
+    if (_interstitialAd == null) return;
     try {
       await _interstitialAd!.show();
     } catch (e) {
-      print('Error showing interstitial ad: $e');
       _loadInterstitialAd();
     }
   }
@@ -93,163 +101,45 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: CustomDrawer(), // Fix class name
+      backgroundColor: const Color(0xFFF6F8F9),
+      drawer: CustomDrawer(),
       appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF3ac0b5), Color(0xFF27a9bf)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.menu),
+          icon: const Icon(Icons.menu, color: Colors.white),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: const Text("Compound Interest"),
+        title: const Text(
+          "Compound Interest",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        physics: const BouncingScrollPhysics(),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Principal Amount
-            buildInputSection(
-              'Principal Amount',
-              _principalController,
-              _principal,
-              0,
-              100000000,
-              (value) {
-                setState(() {
-                  _principal = value;
-                  calculate();
-                });
-              },
-            ),
-
-            SizedBox(height: 24),
-
-            // Interest Rate
-            buildSliderSection(
-              'Interest Rate',
-              _rate,
-              '${_rate.toStringAsFixed(1)}%',
-              1,
-              30,
-              290,
-              (value) {
-                setState(() {
-                  _rate = value;
-                  calculate();
-                });
-              },
-            ),
-
-            SizedBox(height: 24),
-
-            // Time Period
-            buildSliderSection(
-              'Time Period',
-              _years.toDouble(),
-              '$_years Years',
-              1,
-              30,
-              29,
-              (value) {
-                setState(() {
-                  _years = value.round();
-                  calculate();
-                });
-              },
-            ),
-
-            SizedBox(height: 32),
-
-            // Result Section
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Final Amount',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    _currencyFormat.format(_result),
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 32),
-
-            // Investment Table
-            if (_yearlyDetails.isNotEmpty) ...[
-              Text(
-                'Investment Details',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-              SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: [
-                    DataColumn(label: Text('Year')),
-                    DataColumn(label: Text('Start Balance')),
-                    DataColumn(label: Text('Interest')),
-                    DataColumn(label: Text('End Balance')),
-                  ],
-                  rows: _yearlyDetails.map((year) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(year['year'].toString())),
-                        DataCell(
-                            Text(_currencyFormat.format(year['startBalance']))),
-                        DataCell(
-                            Text(_currencyFormat.format(year['interest']))),
-                        DataCell(
-                            Text(_currencyFormat.format(year['endBalance']))),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-
-            SizedBox(height: 24),
-
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: saveCalculation,
-                child: Text(
-                  'Save Calculation',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
+            _buildCalculatorCard(),
+            const SizedBox(height: 16),
+            _buildResultCard(),
+            const SizedBox(height: 16),
+            if (_yearlyDetails.isNotEmpty) _buildInvestmentBreakdownPreview(),
+            const SizedBox(height: 24),
+            _buildFullTableButton(),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -257,7 +147,620 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
     );
   }
 
+  Widget _buildCalculatorCard() {
+    return Container(
+      margin: const EdgeInsets.only(left: 20, right: 20, top: 20),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            spreadRadius: 2,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Principal Amount Card
+          _buildPrincipalSection(),
+          const SizedBox(height: 24),
+
+          // Interest Rate Card
+          _buildInterestSection(),
+          const SizedBox(height: 24),
+
+          // Time Period Card
+          _buildPeriodSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrincipalSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Principal Amount',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Container() // Empty spacer
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFAFBFC),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const Text(
+                '\$',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _principalController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (value) {
+                    String clean = value.replaceAll(RegExp(r'[^0-9]'), '');
+                    if (clean.isEmpty) {
+                      _principal = 0;
+                    } else {
+                      _principal = double.parse(clean);
+                      if (_principal > 50000000) _principal = 50000000;
+                    }
+                    setState(() {
+                      calculate();
+                    });
+                  },
+                  onSubmitted: (value) {
+                    _principalController.text =
+                        _numberFormat.format(_principal);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildCustomSlider(
+          value: _principal,
+          min: 1000,
+          max: 50000000,
+          onChanged: (val) {
+            setState(() {
+              _principal = val;
+              _principalController.text = _numberFormat.format(val);
+              calculate();
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInterestSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Interest Rate',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Row(
+              children: [
+                SizedBox(
+                  width: 60,
+                  child: TextField(
+                    controller: _rateController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    onChanged: (value) {
+                      double? val = double.tryParse(value);
+                      if (val != null) {
+                        if (val > 20) val = 20;
+                        if (val < 1) val = 1;
+                        _rate = val;
+                        setState(() {
+                          calculate();
+                        });
+                      }
+                    },
+                    onSubmitted: (value) {
+                      _rateController.text = _rate.toStringAsFixed(1);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Text(
+                  '%',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildCustomSlider(
+          value: _rate,
+          min: 1,
+          max: 20,
+          onChanged: (val) {
+            setState(() {
+              _rate = val;
+              _rateController.text = val.toStringAsFixed(1);
+              calculate();
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPeriodSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Time Period',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Row(
+              children: [
+                SizedBox(
+                  width: 50,
+                  child: TextField(
+                    controller: _yearsController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    onChanged: (value) {
+                      int? val = int.tryParse(value);
+                      if (val != null) {
+                        if (val > 30) val = 30;
+                        if (val < 1) val = 1;
+                        _years = val;
+                        setState(() {
+                          calculate();
+                        });
+                      }
+                    },
+                    onSubmitted: (value) {
+                      _yearsController.text = _years.toString();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Text(
+                  'Years',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildCustomSlider(
+          value: _years.toDouble(),
+          min: 1,
+          max: 30,
+          onChanged: (val) {
+            setState(() {
+              _years = val.round();
+              _yearsController.text = _years.toString();
+              calculate();
+            });
+          },
+          divisions: 29,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomSlider({
+    required double value,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+    int? divisions,
+  }) {
+    return SliderTheme(
+      data: SliderThemeData(
+        activeTrackColor: const Color(0xFF3ac0b5),
+        inactiveTrackColor: const Color(0xFFE2E8F0),
+        trackHeight: 4.0,
+        thumbShape: const RoundSliderThumbShape(
+          enabledThumbRadius: 12,
+          elevation: 4,
+          pressedElevation: 8,
+        ),
+        thumbColor: Colors.white,
+        overlayColor: const Color(0xFF3ac0b5).withValues(alpha: 0.1),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
+      ),
+      child: Slider(
+        value: value.clamp(min, max),
+        min: min,
+        max: max,
+        divisions: divisions,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _buildResultCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            spreadRadius: 2,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Final Amount',
+            style: TextStyle(
+              color: Color(0xFF6B7280),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _currencyFormat.format(_result),
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF3ac0b5),
+            ),
+          ),
+          const SizedBox(height: 30),
+          SizedBox(
+            height: 150,
+            child: _buildGrowthChart(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGrowthChart() {
+    if (_yearlyDetails.isEmpty) return const SizedBox();
+
+    List<FlSpot> spots = [];
+    spots.add(FlSpot(0, _principal)); // Start point
+
+    for (int i = 0; i < _yearlyDetails.length; i++) {
+      // Step size for x-axis if there are many years. For simplicity plot them all
+      spots.add(FlSpot(_yearlyDetails[i]['year'].toDouble(),
+          _yearlyDetails[i]['endBalance']));
+    }
+
+    // Determine max Y for scaling
+    double maxY = _result * 1.1;
+
+    return LineChart(
+      LineChartData(
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (touchedSpot) =>
+                Colors.blueGrey.withValues(alpha: 0.9),
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                return LineTooltipItem(
+                  _currencyFormat.format(spot.y),
+                  const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(
+          show: true,
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              getTitlesWidget: (value, meta) {
+                // Determine step for showing year markers at bottom
+                int step = _years > 10 ? (_years ~/ 5) : 2;
+                if (value.toInt() == 0 ||
+                    value.toInt() == _years ||
+                    (value.toInt() % step == 0)) {
+                  return Text(
+                    value.toInt().toString(),
+                    style:
+                        const TextStyle(color: Color(0xFF9CA3AF), fontSize: 10),
+                  );
+                }
+                return const Text('');
+              },
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        minX: 0,
+        maxX: _years.toDouble(),
+        minY: _principal * 0.9,
+        maxY: maxY,
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: false,
+            color: const Color(0xFF3ac0b5),
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) {
+                // Only show dots exactly where we show labels
+                int step = _years > 10 ? (_years ~/ 5) : 2;
+                if (spot.x == 0 ||
+                    spot.x == _years ||
+                    spot.x.toInt() % step == 0) {
+                  return FlDotCirclePainter(
+                    radius: 4,
+                    color: Colors.white,
+                    strokeWidth: 2,
+                    strokeColor: const Color(0xFF3ac0b5),
+                  );
+                }
+                return FlDotCirclePainter(radius: 0, color: Colors.transparent);
+              },
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF3ac0b5).withValues(alpha: 0.3),
+                  const Color(0xFF3ac0b5).withValues(alpha: 0.0),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInvestmentBreakdownPreview() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            spreadRadius: 2,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Investment Breakdown',
+            style: TextStyle(
+              color: Color(0xFF1F2937),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Table(
+            columnWidths: const {
+              0: FlexColumnWidth(1),
+              1: FlexColumnWidth(2),
+              2: FlexColumnWidth(2),
+            },
+            children: [
+              TableRow(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFAFBFC),
+                ),
+                children: [
+                  _headerCell('YEAR'),
+                  _headerCell('BALANCE'),
+                  _headerCell('INTEREST', align: TextAlign.right),
+                ],
+              ),
+              // Show max 3 records
+              for (int i = 0;
+                  i < (_yearlyDetails.length > 3 ? 3 : _yearlyDetails.length);
+                  i++)
+                TableRow(
+                  decoration: const BoxDecoration(
+                    border:
+                        Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+                  ),
+                  children: [
+                    _dataCell(_yearlyDetails[i]['year'].toString(), bold: true),
+                    _dataCell(
+                        _currencyFormat.format(_yearlyDetails[i]['endBalance']),
+                        color: const Color(0xFF64748B)),
+                    _dataCell(
+                        '+${_currencyFormat.format(_yearlyDetails[i]['interest'])}',
+                        color: const Color(0xFF22C55E),
+                        align: TextAlign.right),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerCell(String text, {TextAlign align = TextAlign.left}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF6B7280),
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+        textAlign: align,
+      ),
+    );
+  }
+
+  Widget _dataCell(String text,
+      {Color? color, bool bold = false, TextAlign align = TextAlign.left}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color ?? const Color(0xFF1F2937),
+          fontSize: 13,
+          fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
+        ),
+        textAlign: align,
+      ),
+    );
+  }
+
+  Widget _buildFullTableButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton.icon(
+        onPressed: navigateToBreakdown,
+        icon: const Icon(Icons.table_chart_outlined,
+            color: Colors.white, size: 24),
+        label: const Text(
+          'Full Yearly Table',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF3ac0b5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 4,
+          shadowColor: const Color(0xFF3ac0b5).withValues(alpha: 0.4),
+        ),
+      ),
+    );
+  }
+
   void calculate() {
+    if (_principal <= 0) {
+      setState(() {
+        _result = 0;
+        _yearlyDetails = [];
+      });
+      return;
+    }
+
     double amount = _principal;
     _yearlyDetails = [];
 
@@ -275,43 +778,47 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
       amount = newAmount;
     }
 
-    setState(() {
-      _result = amount;
+    _result = amount;
+  }
+
+  void navigateToBreakdown() async {
+    if (_principal <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Principal amount must be greater than 0')),
+      );
+      return;
+    }
+
+    // Save calculation before navigating
+    _saveCalculationSilent();
+
+    Navigator.pushNamed(context, "compound_breakdown", arguments: {
+      'principal': _principal,
+      'rate': _rate,
+      'years': _years,
+      'result': _result,
+      'yearlyDetails': _yearlyDetails
     });
   }
 
-  void saveCalculation() async {
+  void _saveCalculationSilent() async {
     if (_principal > 0) {
-      // Check for duplicates
-      final records = await LoanData().getCompoundInterestHistory();
+      final records = await loanRepo.getCompoundInterestHistory();
       bool isDuplicate = records.any((record) =>
           record.principal == _principal &&
           record.rate == _rate &&
           record.years == _years);
 
-      if (isDuplicate) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Duplicate Record'),
-            content: Text('This calculation already exists in history.'),
-            actions: [
-              TextButton(
-                child: Text('Cancel'),
-                onPressed: () => Navigator.pop(context),
-              ),
-              TextButton(
-                child: Text('Save Anyway'),
-                onPressed: () {
-                  _saveRecord();
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
+      if (!isDuplicate) {
+        final calculation = CompoundInterest(
+          principal: _principal,
+          rate: _rate,
+          years: _years,
+          result: _result,
+          date: DateTime.now(),
         );
-      } else {
-        _saveRecord();
+        loanRepo.saveCompoundInterest(calculation);
       }
     }
 
@@ -325,160 +832,5 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
         _saveCalcCounter();
       }
     }
-  }
-
-  void _saveRecord() {
-    final calculation = CompoundInterest(
-      principal: _principal,
-      rate: _rate,
-      years: _years,
-      result: _result,
-      date: DateTime.now(),
-    );
-
-    LoanData().saveCompoundInterest(calculation);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Calculation saved')),
-    );
-  }
-
-  Widget buildInputSection(
-    String title,
-    TextEditingController controller,
-    double value,
-    double min,
-    double max,
-    ValueChanged<double> onChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            prefixText: '\$ ',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          onChanged: (value) {
-            if (value.isEmpty) {
-              onChanged(0);
-              return;
-            }
-
-            String digitsOnly = value.replaceAll(RegExp(r'[^\d]'), '');
-            if (digitsOnly.isEmpty) return;
-
-            double amount = double.parse(digitsOnly);
-            if (amount > max) amount = max;
-            if (amount < min) amount = min;
-
-            onChanged(amount);
-
-            // Format the number with commas
-            final formattedText =
-                intl.NumberFormat("#,###", "en_US").format(amount);
-
-            // Only update if the formatted text is different
-            if (controller.text != formattedText) {
-              controller.text = formattedText;
-              controller.selection = TextSelection.fromPosition(
-                TextPosition(offset: controller.text.length),
-              );
-            }
-          },
-        ),
-        SliderTheme(
-          data: SliderThemeData(
-            activeTrackColor: Colors.teal,
-            inactiveTrackColor: Colors.grey[200],
-            thumbColor: Colors.white,
-            overlayColor: Colors.teal.withOpacity(0.1),
-            trackHeight: 4.0,
-            thumbShape: RoundSliderThumbShape(
-              enabledThumbRadius: 12,
-              elevation: 4,
-            ),
-            overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
-          ),
-          child: Slider(
-            value: value,
-            min: min,
-            max: max,
-            onChanged: (sliderValue) {
-              onChanged(sliderValue);
-              // Update text field when slider changes
-              controller.text =
-                  intl.NumberFormat("#,###", "en_US").format(sliderValue);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildSliderSection(
-    String title,
-    double value,
-    String displayValue,
-    double min,
-    double max,
-    int divisions,
-    ValueChanged<double> onChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          displayValue,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        SliderTheme(
-          data: SliderThemeData(
-            activeTrackColor: Colors.teal,
-            inactiveTrackColor: Colors.grey[200],
-            thumbColor: Colors.white,
-            overlayColor: Colors.teal.withOpacity(0.1),
-            trackHeight: 4.0,
-            thumbShape: RoundSliderThumbShape(
-              enabledThumbRadius: 12,
-              elevation: 4,
-            ),
-            overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
-          ),
-          child: Slider(
-            value: value,
-            min: min,
-            max: max,
-            divisions: divisions,
-            onChanged: onChanged,
-          ),
-        ),
-      ],
-    );
   }
 }

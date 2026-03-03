@@ -4,6 +4,7 @@ import 'package:mortgageloan/src/screens/currencyconvert_page.dart';
 import 'package:mortgageloan/src/screens/history_page.dart';
 import 'package:mortgageloan/src/screens/home_page.dart';
 import 'package:mortgageloan/src/screens/compound_interest_page.dart';
+import 'package:mortgageloan/src/screens/compound_breakdown_page.dart';
 
 Map<String, WidgetBuilder> routes() {
   return <String, WidgetBuilder>{
@@ -11,6 +12,8 @@ Map<String, WidgetBuilder> routes() {
     "amortization": (BuildContext context) => const AmortizationPage(),
     "history": (BuildContext context) => HistoryPage(),
     "currency": (BuildContext context) => CurrencyConvertPage(),
-    "compound": (BuildContext context) => CompoundInterestPage()
+    "compound": (BuildContext context) => CompoundInterestPage(),
+    "compound_breakdown": (BuildContext context) =>
+        const CompoundBreakdownPage(),
   };
 }
