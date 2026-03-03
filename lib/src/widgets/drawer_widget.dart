@@ -50,6 +50,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
           title: Text("Calculate Loan",
               style: TextStyle(color: Colors.grey[700], fontSize: 18))),
       ListTile(
+          key: Key('simulator'),
+          onTap: () => Navigator.popAndPushNamed(context, "simulator"),
+          leading: Icon(Icons.analytics, color: Theme.of(context).primaryColor),
+          title: Text("Simulator",
+              style: TextStyle(color: Colors.grey[700], fontSize: 18))),
+      ListTile(
           key: Key('compound_interest'),
           onTap: () => Navigator.popAndPushNamed(context, "compound"),
           leading:
