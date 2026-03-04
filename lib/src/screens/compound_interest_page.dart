@@ -6,6 +6,7 @@ import 'package:mortgageloan/src/models/compound_interest_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mortgageloan/src/utils/ad_helper.dart';
 
 class CompoundInterestPage extends StatefulWidget {
   @override
@@ -56,7 +57,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
 
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: "ca-app-pub-4574158711047577/4568082033",
+      adUnitId: AdHelper.interstitialAdUnitId,
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {

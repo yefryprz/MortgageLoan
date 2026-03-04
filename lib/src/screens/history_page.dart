@@ -6,6 +6,7 @@ import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mortgageloan/src/utils/ad_helper.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -37,7 +38,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: "ca-app-pub-4574158711047577/4568082033",
+      adUnitId: AdHelper.interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {

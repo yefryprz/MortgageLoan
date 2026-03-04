@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mortgageloan/src/utils/ad_helper.dart';
 
 class CustomAdBanner extends StatefulWidget {
   final String? amount;
@@ -35,7 +36,7 @@ class _CustomAdBannerState extends State<CustomAdBanner> {
   initBannerAd() {
     bannerAd = new BannerAd(
         size: AdSize.banner,
-        adUnitId: "ca-app-pub-4574158711047577/5477839021",
+        adUnitId: AdHelper.bannerAdUnitId,
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             setState(() {

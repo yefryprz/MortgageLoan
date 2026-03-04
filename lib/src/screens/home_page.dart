@@ -3,6 +3,7 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mortgageloan/src/utils/ad_helper.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
@@ -547,8 +548,7 @@ class _HomePageState extends State<HomePage> {
 
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId:
-          "ca-app-pub-4574158711047577/4568082033", // Keep empty as in original code, usually handled via remote config or real id
+      adUnitId: AdHelper.interstitialAdUnitId,
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
