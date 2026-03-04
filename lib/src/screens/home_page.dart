@@ -62,8 +62,8 @@ class _HomePageState extends State<HomePage> {
       upgrader: Upgrader(debugLogging: true),
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: const Color(0xFFF6F8F9),
-        drawer: CustomDrawer(),
+        drawerEdgeDragWidth: MediaQuery.of(context).size.width,
+        drawer: const CustomDrawer(currentRoute: "/"),
         appBar: AppBar(
           backgroundColor: const Color(0xFFF6F8F9),
           elevation: 0,

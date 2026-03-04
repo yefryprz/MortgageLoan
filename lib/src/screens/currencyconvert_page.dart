@@ -118,8 +118,8 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF6F8F9),
-      drawer: CustomDrawer(),
+      drawerEdgeDragWidth: MediaQuery.of(context).size.width,
+      drawer: const CustomDrawer(currentRoute: "currency"),
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),

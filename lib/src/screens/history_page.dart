@@ -76,8 +76,8 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF6F8F9),
-      drawer: CustomDrawer(),
+      drawerEdgeDragWidth: MediaQuery.of(context).size.width,
+      drawer: const CustomDrawer(currentRoute: "history"),
       appBar: _buildAppBar(),
       body: Column(
         children: [

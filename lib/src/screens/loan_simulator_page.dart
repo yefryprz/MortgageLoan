@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:mortgageloan/src/services/cache_service.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
+import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 
 class Country {
   final String name;
@@ -28,6 +29,7 @@ class LoanSimulatorPage extends StatefulWidget {
 }
 
 class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final NumberFormat _currencyFormat =
       NumberFormat.currency(locale: 'en_US', symbol: '\$');
 
@@ -219,14 +221,17 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
     final double monthsSaved = advancedSimulation['monthsSaved'] ?? 0;
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawerEdgeDragWidth: MediaQuery.of(context).size.width,
+      drawer: const CustomDrawer(currentRoute: "simulator"),
       backgroundColor: const Color(0xFFF6F8F9),
       bottomNavigationBar: CustomAdBanner(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.menu, color: Color(0xFF1F2937)),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: const Text(
           "Loan Simulator",
