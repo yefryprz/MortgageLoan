@@ -86,7 +86,9 @@ class _HistoryPageState extends State<HistoryPage> {
           Expanded(
             child: _selectedTabIndex == 0
                 ? _buildLoanHistory()
-                : _buildCompoundHistory(),
+                : _selectedTabIndex == 1
+                    ? _buildCompoundHistory()
+                    : _buildAiHistory(),
           ),
         ],
       ),
@@ -177,9 +179,34 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  "Compound Interest",
+                  "Investment",
                   style: TextStyle(
                     color: _selectedTabIndex == 1
+                        ? const Color(0xFF3ac0b5)
+                        : const Color(0xFF6B7280),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTabIndex = 2),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _selectedTabIndex == 2
+                      ? const Color(0xFFE6F7F5)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(26),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  "AI Advisor",
+                  style: TextStyle(
+                    color: _selectedTabIndex == 2
                         ? const Color(0xFF3ac0b5)
                         : const Color(0xFF6B7280),
                     fontWeight: FontWeight.bold,
@@ -742,6 +769,179 @@ class _HistoryPageState extends State<HistoryPage> {
                   _showDeleteConfirmDialog(context, () {
                     setState(() {
                       loanRepo.deleteCompoundInterest(data.id);
+                    });
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                child: const Icon(Icons.delete_outline,
+                    color: Color(0xFF94A3B8), size: 22),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiHistory() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: loanRepo.getAiAnalysisHistory(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF3ac0b5)));
+        }
+
+        if (snapshot.data?.isEmpty ?? true) {
+          return _buildEmptyState("No AI analysis history yet.");
+        }
+
+        List<Map<String, dynamic>> records = snapshot.data!;
+        List<Widget> listItems = [];
+        String currentLabel = "";
+
+        for (var record in records) {
+          DateTime? date = DateTime.tryParse(record["date"] ?? "");
+          String label = _getDateLabel(date);
+          if (label != currentLabel) {
+            listItems.add(Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8, left: 24),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF9CA3AF),
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ));
+            currentLabel = label;
+          }
+          listItems.add(_buildAiCard(record));
+        }
+
+        return ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 24),
+          children: listItems,
+        );
+      },
+    );
+  }
+
+  Widget _buildAiCard(Map<String, dynamic> record) {
+    final loanData = record["loanData"] ?? {};
+    final response = record["response"] ?? {};
+    final date = DateTime.tryParse(record["date"] ?? "");
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            spreadRadius: 2,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF0FDFA),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.psychology,
+                        color: Color(0xFF0D9488), size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "${loanData['loanType'] ?? 'Loan'} Analysis",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                date != null ? _timeFormat.format(date) : "",
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Property Value: ${_currencyFormat.format(double.tryParse(loanData['propertyValue'].toString()) ?? 0)}",
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: Color(0xFF1F2937)),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Analysis for ${loanData['region'] ?? 'Unknown'} market.",
+            style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _handleAdDetailNavigation(() {
+                      Navigator.pushNamed(context, 'ai_insights', arguments: {
+                        ...loanData,
+                        'savedResponse': response,
+                        'isHistory': true,
+                      });
+                    });
+                  },
+                  icon: const Icon(Icons.auto_awesome, size: 18),
+                  label: const Text(
+                    "View Insights",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0D9488),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              OutlinedButton(
+                onPressed: () {
+                  _showDeleteConfirmDialog(context, () {
+                    setState(() {
+                      loanRepo.deleteAiAnalysis(record["id"]);
                     });
                   });
                 },

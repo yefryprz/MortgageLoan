@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:mortgageloan/src/models/compound_interest_model.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
+import 'package:intl/intl.dart';
 
 class LoanData {
   var adKey = "adCount";
@@ -85,6 +86,59 @@ class LoanData {
   Future<void> deleteAllCompoundInterest() async {
     final box = await Hive.openBox("compound_interest");
     await box.clear();
+  }
+
+  Future<void> saveAiAnalysis(
+      Map<String, dynamic> responseJson, Map<String, dynamic> loanData) async {
+    final box = await Hive.openBox("ai_analysis");
+    final int id = box.length + 1;
+    await box.put(id, {
+      "id": id,
+      "date": DateTime.now().toIso8601String(),
+      "response": responseJson,
+      "loanData": loanData,
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getAiAnalysisHistory() async {
+    final box = await Hive.openBox("ai_analysis");
+    return box.values
+        .cast<Map<dynamic, dynamic>>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList()
+        .reversed
+        .toList();
+  }
+
+  Future<void> deleteAiAnalysis(int id) async {
+    final box = await Hive.openBox("ai_analysis");
+    await box.delete(id);
+  }
+
+  Future<void> deleteAllAiAnalysis() async {
+    final box = await Hive.openBox("ai_analysis");
+    await box.clear();
+  }
+
+  Future<bool> canPerformAiAnalysis() async {
+    final box = await Hive.openBox("ai_usage");
+    final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final int count = box.get(today) ?? 0;
+    return count < 3;
+  }
+
+  Future<void> incrementAiAnalysisCount() async {
+    final box = await Hive.openBox("ai_usage");
+    final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final int count = box.get(today) ?? 0;
+    await box.put(today, count + 1);
+  }
+
+  Future<int> getRemainingAiAnalyses() async {
+    final box = await Hive.openBox("ai_usage");
+    final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final int count = box.get(today) ?? 0;
+    return (3 - count).clamp(0, 3);
   }
 
   Future<T?> getValue<T>(String key) async {

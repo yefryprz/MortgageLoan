@@ -52,6 +52,8 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox("loan");
   await Hive.openBox("compound_interest");
+  await Hive.openBox("ai_analysis");
+  await Hive.openBox("ai_usage");
   runApp(const MyApp());
 }
 

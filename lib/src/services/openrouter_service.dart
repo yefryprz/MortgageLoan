@@ -141,8 +141,8 @@ Responde ÚNICAMENTE con el siguiente JSON Array/Object schema, sin texto adicio
             'content': userPrompt,
           }
         ],
-        'temperature': 0.3,
-        'max_tokens': 3500,
+        'temperature': 0.1,
+        'max_tokens': 2000,
       }),
     );
 

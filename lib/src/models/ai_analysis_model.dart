@@ -10,6 +10,12 @@ class AiAnalysisResponse {
           : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'analysis': analysis?.toJson(),
+    };
+  }
 }
 
 class AiAnalysisData {
@@ -96,6 +102,31 @@ class AiAnalysisData {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'createdAt': createdAt,
+      'region': region,
+      'loanType': loanType,
+      'status': status,
+      'summary': summary?.toJson(),
+      'marketComparison': marketComparison?.toJson(),
+      'optimalRepaymentPlan': optimalRepaymentPlan?.toJson(),
+      'refinancingAlert': refinancingAlert?.toJson(),
+      'bankRecommendations':
+          bankRecommendations?.map((e) => e.toJson()).toList(),
+      'negotiationStrategies':
+          negotiationStrategies?.map((e) => e.toJson()).toList(),
+      'riskAssessment': riskAssessment?.toJson(),
+      'taxImplications': taxImplications?.toJson(),
+      'insuranceRecommendations':
+          insuranceRecommendations?.map((e) => e.toJson()).toList(),
+      'extraPaymentImpact': extraPaymentImpact?.toJson(),
+      'amortizationSnapshot': amortizationSnapshot?.toJson(),
+      'actionItems': actionItems?.map((e) => e.toJson()).toList(),
+    };
+  }
 }
 
 class Summary {
@@ -125,6 +156,17 @@ class Summary {
           ?.map((e) => e as String)
           .toList(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'subtitle': subtitle,
+      'overallScore': overallScore,
+      'scoreLabel': scoreLabel,
+      'riskLevel': riskLevel,
+      'highlights': highlights,
+    };
   }
 }
 
@@ -160,6 +202,19 @@ class MarketComparison {
       historicalTrend: json['historicalTrend'] as String?,
       forecastNote: json['forecastNote'] as String?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userRate': userRate,
+      'averageRate': averageRate,
+      'rateDifference': rateDifference,
+      'ratingLabel': ratingLabel,
+      'comparedTo': comparedTo,
+      'advice': advice,
+      'historicalTrend': historicalTrend,
+      'forecastNote': forecastNote,
+    };
   }
 }
 
@@ -206,6 +261,22 @@ class OptimalRepaymentPlan {
       simulationAvailable: json['simulationAvailable'] as bool?,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'tag': tag,
+      'description': description,
+      'extraPaymentPercent': extraPaymentPercent,
+      'extraPaymentType': extraPaymentType,
+      'totalInterestSaved': totalInterestSaved,
+      'totalInterestSavedFormatted': totalInterestSavedFormatted,
+      'newLoanTermMonths': newLoanTermMonths,
+      'originalLoanTermMonths': originalLoanTermMonths,
+      'monthsSaved': monthsSaved,
+      'simulationAvailable': simulationAvailable,
+    };
+  }
 }
 
 class RefinancingAlert {
@@ -249,6 +320,22 @@ class RefinancingAlert {
       recommendedAction: json['recommendedAction'] as String?,
       timeframe: json['timeframe'] as String?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'active': active,
+      'urgency': urgency,
+      'probability': probability,
+      'title': title,
+      'subtitle': subtitle,
+      'description': description,
+      'projectedNewRate': projectedNewRate,
+      'estimatedSavings': estimatedSavings,
+      'estimatedSavingsFormatted': estimatedSavingsFormatted,
+      'recommendedAction': recommendedAction,
+      'timeframe': timeframe,
+    };
   }
 }
 
@@ -303,6 +390,25 @@ class BankRecommendation {
       url: json['url'] as String?,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'rank': rank,
+      'bankName': bankName,
+      'interestRate': interestRate,
+      'apr': apr,
+      'loanTermYears': loanTermYears,
+      'monthlyPayment': monthlyPayment,
+      'monthlyPaymentFormatted': monthlyPaymentFormatted,
+      'totalInterest': totalInterest,
+      'closingCosts': closingCosts,
+      'pros': pros,
+      'cons': cons,
+      'bestFor': bestFor,
+      'specialOffers': specialOffers,
+      'url': url,
+    };
+  }
 }
 
 class NegotiationStrategy {
@@ -340,6 +446,19 @@ class NegotiationStrategy {
           ?.map((e) => e as String)
           .toList(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'difficulty': difficulty,
+      'potentialSavings': potentialSavings,
+      'potentialSavingsFormatted': potentialSavingsFormatted,
+      'description': description,
+      'steps': steps,
+      'talkingPoints': talkingPoints,
+    };
   }
 }
 
@@ -380,6 +499,19 @@ class RiskAssessment {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'overallRisk': overallRisk,
+      'debtToIncomeRatio': debtToIncomeRatio,
+      'debtToIncomeStatus': debtToIncomeStatus,
+      'loanToValueRatio': loanToValueRatio,
+      'loanToValueStatus': loanToValueStatus,
+      'affordabilityIndex': affordabilityIndex,
+      'warnings': warnings,
+      'positives': positives,
+    };
+  }
 }
 
 class TaxImplications {
@@ -418,6 +550,19 @@ class TaxImplications {
           (json['notes'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'applicable': applicable,
+      'region': region,
+      'deductibleInterest': deductibleInterest,
+      'estimatedAnnualDeduction': estimatedAnnualDeduction,
+      'estimatedAnnualDeductionFormatted': estimatedAnnualDeductionFormatted,
+      'estimatedTaxSavings': estimatedTaxSavings,
+      'estimatedTaxSavingsFormatted': estimatedTaxSavingsFormatted,
+      'notes': notes,
+    };
+  }
 }
 
 class InsuranceRecommendation {
@@ -448,11 +593,20 @@ class InsuranceRecommendation {
       recommendation: json['recommendation'] as String?,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'required': required,
+      'reason': reason,
+      'estimatedMonthlyCost': estimatedMonthlyCost,
+      'estimatedMonthlyCostFormatted': estimatedMonthlyCostFormatted,
+      'recommendation': recommendation,
+    };
+  }
 }
 
 class ExtraPaymentImpact {
-  // We can skip deep parsing of lumpSum, monthlyExtra, biweeklyPayments for now
-  // or define them as Maps since not strictly typed in all UI usages.
   final Map<String, dynamic>? lumpSum;
   final Map<String, dynamic>? monthlyExtra;
   final Map<String, dynamic>? biweeklyPayments;
@@ -469,6 +623,14 @@ class ExtraPaymentImpact {
       monthlyExtra: json['monthlyExtra'] as Map<String, dynamic>?,
       biweeklyPayments: json['biweeklyPayments'] as Map<String, dynamic>?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'lumpSum': lumpSum,
+      'monthlyExtra': monthlyExtra,
+      'biweeklyPayments': biweeklyPayments,
+    };
   }
 }
 
@@ -511,6 +673,21 @@ class AmortizationSnapshot {
       totalCostFormatted: json['totalCostFormatted'] as String?,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'firstYearPrincipal': firstYearPrincipal,
+      'firstYearInterest': firstYearInterest,
+      'midTermPrincipal': midTermPrincipal,
+      'midTermInterest': midTermInterest,
+      'lastYearPrincipal': lastYearPrincipal,
+      'lastYearInterest': lastYearInterest,
+      'totalInterest': totalInterest,
+      'totalInterestFormatted': totalInterestFormatted,
+      'totalCost': totalCost,
+      'totalCostFormatted': totalCostFormatted,
+    };
+  }
 }
 
 class ActionItem {
@@ -533,5 +710,14 @@ class ActionItem {
       deadline: json['deadline'] as String?,
       impact: json['impact'] as String?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'priority': priority,
+      'action': action,
+      'deadline': deadline,
+      'impact': impact,
+    };
   }
 }

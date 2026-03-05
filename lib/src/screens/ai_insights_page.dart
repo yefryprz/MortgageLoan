@@ -1,5 +1,5 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -25,18 +25,44 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
 
   final OpenRouterService _aiService = OpenRouterService();
 
+  bool _isHistory = false;
+  int _remainingAnalyses = 3;
+
   @override
   void initState() {
     super.initState();
     _loadInterstitialAd();
+    Future.delayed(Duration.zero, () {
+      _checkUsageLimit();
+    });
+  }
+
+  Future<void> _checkUsageLimit() async {
+    final remaining = await loanRepo.getRemainingAiAnalyses();
+    setState(() {
+      _remainingAnalyses = remaining;
+    });
+  }
+
+  void _loadHistoryData() {
+    if (_args['isHistory'] == true) {
+      setState(() {
+        _isHistory = true;
+        if (_args['savedResponse'] != null) {
+          final Map<String, dynamic> savedResponse =
+              jsonDecode(jsonEncode(_args['savedResponse']));
+          _analysisResult = AiAnalysisResponse.fromJson(savedResponse);
+        }
+      });
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
+    final args = ModalRoute.of(context)?.settings.arguments;
+    _args = args is Map ? Map<String, dynamic>.from(args) : {};
+    _loadHistoryData();
   }
 
   @override
@@ -71,16 +97,23 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   Future<void> _handleGenerateStrategy() async {
     if (_isLoading) return;
 
-    int adCount = await loanRepo.getAdCount("aiCount");
-    if (adCount >= 1) {
-      if (_interstitialAd != null) {
-        await _interstitialAd!.show();
-      } else {
-        loanRepo.resetAdCount("aiCount");
-        _fetchAiAnalysis();
+    final canPerform = await loanRepo.canPerformAiAnalysis();
+    if (!canPerform) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Only 3 AI evaluations are allowed per day.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
+      return;
+    }
+
+    // Always show ad after EACH analysis as requested
+    if (_interstitialAd != null) {
+      await _interstitialAd!.show();
     } else {
-      loanRepo.AdCountUp("aiCount");
       _fetchAiAnalysis();
     }
   }
@@ -93,15 +126,16 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
 
     try {
       final result = await _aiService.getAiAnalysis(loanData: _args);
+
+      // Save to history and increment counter
+      await loanRepo.saveAiAnalysis(result.toJson(), _args);
+      await loanRepo.incrementAiAnalysisCount();
+
       setState(() {
         _analysisResult = result;
         _isLoading = false;
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Strategy generated successfully!')),
-        );
-      }
+      _checkUsageLimit();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -169,7 +203,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                           ),
                           SizedBox(height: 24),
                           Text(
-                            "El proceso de análisis crediticio podría tomar varios minutos en realizarse.\nPor favor espere unos minutos...",
+                            "The credit analysis process may take several minutes.\nPlease wait a moment...",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Color(0xFF6B7280),
@@ -205,23 +239,41 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                 else if (_analysisResult != null &&
                     _analysisResult!.analysis != null)
                   _buildDynamicResults(_analysisResult!.analysis!)
-                else
-                  const Center(
+                else if (!_isHistory)
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: Text(
-                        "Tap 'Generate Strategy' to analyze your loan.",
-                        style: TextStyle(color: Color(0xFF6B7280)),
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          const Text(
+                            "Tap 'Generate Strategy' to analyze your loan.",
+                            style: TextStyle(color: Color(0xFF6B7280)),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            "Remaining evaluations today: $_remainingAnalyses/3",
+                            style: const TextStyle(
+                                color: Color(0xFF3ac0b5),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Only 3 AI evaluations are allowed per day.",
+                            style: TextStyle(
+                                color: Color(0xFF9CA3AF), fontSize: 11),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                const SizedBox(height: 120),
+                SizedBox(height: _isHistory ? 40 : 120),
               ],
             ),
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: _buildFloatingActions(),
+          floatingActionButton: _isHistory ? null : _buildFloatingActions(),
           bottomNavigationBar: CustomAdBanner(),
         ));
   }
@@ -480,11 +532,31 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (data.ratingLabel != null && data.ratingLabel!.isNotEmpty) ...[
+            Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  data.ratingLabel!,
+                  style: const TextStyle(
+                      color: Color(0xFF16A34A),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           Row(
             children: [
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text("Your Rate",
                         style:
@@ -505,7 +577,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                   margin: const EdgeInsets.symmetric(horizontal: 16)),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text("Avg Rate",
                         style:
@@ -519,22 +591,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                   ],
                 ),
               ),
-              if (data.ratingLabel != null && data.ratingLabel!.isNotEmpty)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    data.ratingLabel!,
-                    style: const TextStyle(
-                        color: Color(0xFF16A34A),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -727,11 +783,31 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       iconBgColor: const Color(0xFFFEF3C7),
       title: summary.title ?? "Executive Summary",
       subtitle: summary.subtitle ?? "At a glance",
-      badgeText: summary.scoreLabel ?? "",
-      badgeColor: const Color(0xFFFEF3C7),
+      badgeText: "",
+      badgeColor: Colors.transparent,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (summary.scoreLabel != null && summary.scoreLabel!.isNotEmpty) ...[
+            Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  summary.scoreLabel!,
+                  style: const TextStyle(
+                      color: Color(0xFFF59E0B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -790,10 +866,14 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(bank.bankName ?? "Unknown Bank",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    Expanded(
+                      child: Text(bank.bankName ?? "Unknown Bank",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                    const SizedBox(width: 8),
                     Text("${bank.interestRate}%",
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,

@@ -24,13 +24,15 @@ class _CustomAdBannerState extends State<CustomAdBanner> {
 
   @override
   Widget build(BuildContext context) {
-    return isLoaded
-        ? SizedBox(
-            height: bannerAd.size.height.toDouble(),
-            width: bannerAd.size.width.toDouble(),
-            child: AdWidget(ad: bannerAd),
-          )
-        : SizedBox();
+    return SafeArea(
+      child: isLoaded
+          ? SizedBox(
+              height: bannerAd.size.height.toDouble(),
+              width: bannerAd.size.width.toDouble(),
+              child: AdWidget(ad: bannerAd),
+            )
+          : const SizedBox(height: 50),
+    );
   }
 
   initBannerAd() {
