@@ -1055,16 +1055,38 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () {
+              // Calculate values
+              final double principal =
+                  _selectedLoanType == 2 ? _amount : (_amount - _downPayment);
+              final double downPaymentPct =
+                  _amount > 0 ? (_downPayment / _amount) * 100 : 0;
+              final double monthlyPay =
+                  _calculateMonthlyPayment(principal, _rate, _durationYears);
+
               Navigator.pushNamed(context, 'ai_insights', arguments: {
-                'type': _selectedLoanType == 0
-                    ? "Mortgage"
+                'region': _selectedCountry?.name ?? "Global",
+                'currency': "Local Currency",
+                'loanType': _selectedLoanType == 0
+                    ? "Hipotecario"
                     : _selectedLoanType == 1
-                        ? "Vehicle"
-                        : "Consumer",
-                'country': _selectedCountry?.name ?? "Global",
-                'principal': _amount - _downPayment,
-                'rate': _rate,
-                'duration': _durationYears,
+                        ? "Vehículo"
+                        : "Personal",
+                'propertyValue': _amount.toStringAsFixed(2),
+                'downPayment': _downPayment.toStringAsFixed(2),
+                'downPaymentPercentage': downPaymentPct.toStringAsFixed(1),
+                'loanAmount': principal.toStringAsFixed(2),
+                'interestRate': _rate.toStringAsFixed(2),
+                'durationYears': _durationYears.toString(),
+                'monthlyPayment': monthlyPay.toStringAsFixed(2),
+                'lumpSumPayment': _advancedScenarioMode == 0
+                    ? _extraPaymentAmount.toStringAsFixed(2)
+                    : "0",
+                'lumpSumYear':
+                    _advancedScenarioMode == 0 ? _lumpSumYear.toString() : "0",
+                'scenarioGoal': _advancedScenarioMode == 0
+                    ? "Reducir Total Interés"
+                    : "Mensual Extra",
+                'currentDate': DateTime.now().toIso8601String().split('T')[0],
               });
             },
             child: const Row(

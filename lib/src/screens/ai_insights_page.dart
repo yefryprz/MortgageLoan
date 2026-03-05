@@ -4,6 +4,8 @@ import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mortgageloan/src/utils/ad_helper.dart';
+import '../models/ai_analysis_model.dart';
+import '../services/openrouter_service.dart';
 
 class AiInsightsPage extends StatefulWidget {
   const AiInsightsPage({Key? key}) : super(key: key);
@@ -16,10 +18,25 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   InterstitialAd? _interstitialAd;
   final loanRepo = LoanData();
 
+  bool _isLoading = false;
+  String? _error;
+  AiAnalysisResponse? _analysisResult;
+  Map<String, dynamic> _args = {};
+
+  final OpenRouterService _aiService = OpenRouterService();
+
   @override
   void initState() {
     super.initState();
     _loadInterstitialAd();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+            {};
   }
 
   @override
@@ -40,6 +57,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
               _interstitialAd = null;
               loanRepo.resetAdCount("aiCount");
               _loadInterstitialAd();
+              _fetchAiAnalysis(); // Call AI after ad finishes
             },
           );
         },
@@ -51,89 +69,220 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   }
 
   Future<void> _handleGenerateStrategy() async {
+    if (_isLoading) return;
+
     int adCount = await loanRepo.getAdCount("aiCount");
     if (adCount >= 1) {
-      // 2 clicks
       if (_interstitialAd != null) {
         await _interstitialAd!.show();
       } else {
         loanRepo.resetAdCount("aiCount");
+        _fetchAiAnalysis();
       }
     } else {
       loanRepo.AdCountUp("aiCount");
+      _fetchAiAnalysis();
     }
-    // Perform any specific action if needed
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Strategy generated successfully!')),
-      );
+  }
+
+  Future<void> _fetchAiAnalysis() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final result = await _aiService.getAiAnalysis(loanData: _args);
+      setState(() {
+        _analysisResult = result;
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Strategy generated successfully!')),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // We will extract arguments here later to customize the insights,
-    // for now we use an empty map or arguments if passed.
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
+    final loanType = _args['loanType'] ?? 'Mortgage';
+    final country = _args['region'] ?? 'Global';
 
-    final loanType = args['type'] ?? 'Mortgage';
-    final country = args['country'] ?? 'United States';
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F8F9),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F8F9),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "AI Financial Insights",
-          style: TextStyle(
-            color: Color(0xFF1F2937),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            _buildSmartAdvisorHeader(),
-            const SizedBox(height: 24),
-            _buildAnalysisCompleteCard(loanType, country),
-            const SizedBox(height: 32),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "AI Recommendations",
-                style: TextStyle(
-                  color: Color(0xFF1F2937),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+    return PopScope(
+        canPop: !_isLoading,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF6F8F9),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFFF6F8F9),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+              onPressed: _isLoading ? null : () => Navigator.pop(context),
+            ),
+            title: const Text(
+              "AI Financial Insights",
+              style: TextStyle(
+                color: Color(0xFF1F2937),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
             ),
-            const SizedBox(height: 16),
-            _buildOptimalRepaymentCard(),
-            const SizedBox(height: 16),
-            _buildMarketComparisonCard(6.2, 6.8),
-            const SizedBox(height: 16),
-            _buildRefinancingAlertCard(),
-            const SizedBox(
-                height: 120), // padding for floating action / bottom elements
-          ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _buildFloatingActions(),
-      bottomNavigationBar: CustomAdBanner(),
+            centerTitle: true,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                _buildSmartAdvisorHeader(),
+                const SizedBox(height: 24),
+                _buildAnalysisCompleteCard(loanType, country),
+                const SizedBox(height: 32),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "AI Recommendations",
+                    style: TextStyle(
+                      color: Color(0xFF1F2937),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (_isLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFF3ac0b5)),
+                          ),
+                          SizedBox(height: 24),
+                          Text(
+                            "El proceso de análisis crediticio podría tomar varios minutos en realizarse.\nPor favor espere unos minutos...",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 13,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (_error != null)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFCA5A5)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: Color(0xFFEF4444), size: 40),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Failed to generate strategy: $_error",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Color(0xFF991B1B)),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (_analysisResult != null &&
+                    _analysisResult!.analysis != null)
+                  _buildDynamicResults(_analysisResult!.analysis!)
+                else
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Text(
+                        "Tap 'Generate Strategy' to analyze your loan.",
+                        style: TextStyle(color: Color(0xFF6B7280)),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 120),
+              ],
+            ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: _buildFloatingActions(),
+          bottomNavigationBar: CustomAdBanner(),
+        ));
+  }
+
+  Widget _buildDynamicResults(AiAnalysisData data) {
+    return Column(
+      children: [
+        if (data.summary != null) ...[
+          _buildSummaryCard(data.summary!),
+          const SizedBox(height: 16),
+        ],
+        if (data.optimalRepaymentPlan != null) ...[
+          _buildOptimalRepaymentCard(data.optimalRepaymentPlan!),
+          const SizedBox(height: 16),
+        ],
+        if (data.marketComparison != null) ...[
+          _buildMarketComparisonCard(data.marketComparison!),
+          const SizedBox(height: 16),
+        ],
+        if (data.refinancingAlert != null &&
+            data.refinancingAlert!.active == true) ...[
+          _buildRefinancingAlertCard(data.refinancingAlert!),
+          const SizedBox(height: 16),
+        ],
+        if (data.bankRecommendations != null &&
+            data.bankRecommendations!.isNotEmpty) ...[
+          _buildBankRecommendationsCard(data.bankRecommendations!),
+          const SizedBox(height: 16),
+        ],
+        if (data.negotiationStrategies != null &&
+            data.negotiationStrategies!.isNotEmpty) ...[
+          _buildNegotiationStrategiesCard(data.negotiationStrategies!),
+          const SizedBox(height: 16),
+        ],
+        if (data.riskAssessment != null) ...[
+          _buildRiskAssessmentCard(data.riskAssessment!),
+          const SizedBox(height: 16),
+        ],
+        if (data.taxImplications != null &&
+            data.taxImplications!.applicable == true) ...[
+          _buildTaxImplicationsCard(data.taxImplications!),
+          const SizedBox(height: 16),
+        ],
+        if (data.insuranceRecommendations != null &&
+            data.insuranceRecommendations!.isNotEmpty) ...[
+          _buildInsuranceRecommendationsCard(data.insuranceRecommendations!),
+          const SizedBox(height: 16),
+        ],
+        if (data.extraPaymentImpact != null) ...[
+          _buildExtraPaymentImpactCard(data.extraPaymentImpact!),
+          const SizedBox(height: 16),
+        ],
+        if (data.amortizationSnapshot != null) ...[
+          _buildAmortizationSnapshotCard(data.amortizationSnapshot!),
+          const SizedBox(height: 16),
+        ],
+        if (data.actionItems != null && data.actionItems!.isNotEmpty) ...[
+          _buildActionItemsCard(data.actionItems!),
+          const SizedBox(height: 16),
+        ],
+      ],
     );
   }
 
@@ -147,9 +296,9 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
               height: 80,
               width: 80,
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [Color(0xFF3ac0b5), Color(0xFF27a9bf)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -158,7 +307,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
               child: const CircleAvatar(
                 backgroundColor: Colors.white,
                 child: Icon(Icons.person, size: 50, color: Color(0xFF94A3B8)),
-                // In a real app we'd load the avatar image here
               ),
             ),
             Container(
@@ -272,7 +420,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Color(0xFF14EFCD), // Cyan/Teal variant
+              color: Color(0xFF14EFCD),
               shape: BoxShape.circle,
             ),
             child:
@@ -283,45 +431,50 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     );
   }
 
-  Widget _buildOptimalRepaymentCard() {
+  Widget _buildOptimalRepaymentCard(OptimalRepaymentPlan plan) {
     return _buildInsightsCard(
       icon: Icons.savings,
       iconColor: const Color(0xFF14EFCD),
-      title: "Optimal Repayment Plan",
-      subtitle: "Based on current cash flow",
-      badgeText: "TOP PICK",
+      title: plan.title ?? "Optimal Repayment Plan",
+      subtitle: plan.description ?? "",
+      badgeText: "",
       badgeColor: const Color(0xFF14EFCD),
       content: RichText(
-        text: const TextSpan(
-          style: TextStyle(color: Color(0xFF4B5563), fontSize: 14, height: 1.5),
+        text: TextSpan(
+          style: const TextStyle(
+              color: Color(0xFF4B5563), fontSize: 14, height: 1.5),
           children: [
-            TextSpan(text: "Making a "),
+            const TextSpan(text: "Making an extra "),
             TextSpan(
-              text: "15% extra annual payment",
-              style: TextStyle(
+              text: "${plan.extraPaymentPercent ?? 0}% payment",
+              style: const TextStyle(
                   color: Color(0xFF14EFCD), fontWeight: FontWeight.bold),
             ),
-            TextSpan(text: " could save you approximately "),
+            const TextSpan(text: " could save you approximately "),
             TextSpan(
-              text: "\$42,000",
-              style: TextStyle(
+              text: plan.totalInterestSavedFormatted ??
+                  "\$${plan.totalInterestSaved ?? 0}",
+              style: const TextStyle(
                   color: Color(0xFF1F2937), fontWeight: FontWeight.bold),
             ),
-            TextSpan(text: " in total interest over the loan term."),
+            const TextSpan(text: " in total interest over the loan term."),
           ],
         ),
       ),
-      actionText: "Simulate this plan →",
-      onActionTap: () {},
     );
   }
 
-  Widget _buildMarketComparisonCard(double userRate, double avgRate) {
+  Widget _buildMarketComparisonCard(MarketComparison data) {
+    num userRate = data.userRate ?? 0;
+    num avgRate = data.averageRate ?? 0;
+
     return _buildInsightsCard(
       icon: Icons.insert_chart,
       iconColor: const Color(0xFF14EFCD),
       title: "Local Market Comparison",
-      subtitle: "Compared to national average",
+      subtitle: data.comparedTo != null
+          ? "Compared to ${data.comparedTo}"
+          : "Compared to average",
       badgeText: "",
       badgeColor: Colors.transparent,
       content: Column(
@@ -366,50 +519,51 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                   ],
                 ),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(16),
+              if (data.ratingLabel != null && data.ratingLabel!.isNotEmpty)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    data.ratingLabel!,
+                    style: const TextStyle(
+                        color: Color(0xFF16A34A),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
-                child: Text(
-                  "${(avgRate - userRate).toStringAsFixed(2)}% Better",
-                  style: const TextStyle(
-                      color: Color(0xFF16A34A),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            "You are currently beating the market average. Lock this rate if possible.",
-            style:
-                TextStyle(color: Color(0xFF4B5563), fontSize: 14, height: 1.5),
+          Text(
+            data.advice ?? "",
+            style: const TextStyle(
+                color: Color(0xFF4B5563), fontSize: 14, height: 1.5),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRefinancingAlertCard() {
+  Widget _buildRefinancingAlertCard(RefinancingAlert alert) {
     return _buildInsightsCard(
       icon: Icons.notifications_active,
       iconColor: const Color(0xFFF97316),
       iconBgColor: const Color(0xFFFFEDD5),
-      title: "Refinancing Alert",
-      subtitle: "Future opportunity",
+      title: alert.title ?? "Refinancing Alert",
+      subtitle: alert.subtitle ?? "Future opportunity",
       badgeText: "",
       badgeColor: Colors.transparent,
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Rates are projected to drop in Q3. Set a reminder to re-evaluate refinancing options then.",
-            style:
-                TextStyle(color: Color(0xFF4B5563), fontSize: 14, height: 1.5),
+          Text(
+            alert.description ?? "",
+            style: const TextStyle(
+                color: Color(0xFF4B5563), fontSize: 14, height: 1.5),
           ),
           const SizedBox(height: 16),
           Row(
@@ -423,7 +577,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                             color: const Color(0xFFE2E8F0),
                             borderRadius: BorderRadius.circular(3))),
                     FractionallySizedBox(
-                      widthFactor: 0.75,
+                      widthFactor: alert.probability == 'high' ? 0.75 : 0.4,
                       child: Container(
                           height: 6,
                           decoration: BoxDecoration(
@@ -434,15 +588,458 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                "High Probability",
-                style: TextStyle(
+              Text(
+                "${alert.probability ?? 'Medium'} Probability",
+                style: const TextStyle(
                     color: Color(0xFFF97316),
                     fontSize: 12,
                     fontWeight: FontWeight.bold),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRiskAssessmentCard(RiskAssessment risk) {
+    return _buildInsightsCard(
+      icon: Icons.warning_amber_rounded,
+      iconColor: const Color(0xFFEAB308),
+      iconBgColor: const Color(0xFFFEF9C3),
+      title: "Risk Assessment",
+      subtitle: "Overall Risk: ${risk.overallRisk?.toUpperCase() ?? 'UNKNOWN'}",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (risk.warnings != null && risk.warnings!.isNotEmpty) ...[
+            const Text("Warnings",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+            const SizedBox(height: 8),
+            ...risk.warnings!.map((w) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("• ",
+                          style: TextStyle(
+                              color: Color(0xFFEAB308),
+                              fontWeight: FontWeight.bold)),
+                      Expanded(
+                          child: Text(w,
+                              style: const TextStyle(
+                                  color: Color(0xFF4B5563), fontSize: 13))),
+                    ],
+                  ),
+                )),
+            const SizedBox(height: 12),
+          ],
+          if (risk.positives != null && risk.positives!.isNotEmpty) ...[
+            const Text("Positives",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+            const SizedBox(height: 8),
+            ...risk.positives!.map((p) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("• ",
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontWeight: FontWeight.bold)),
+                      Expanded(
+                          child: Text(p,
+                              style: const TextStyle(
+                                  color: Color(0xFF4B5563), fontSize: 13))),
+                    ],
+                  ),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionItemsCard(List<ActionItem> actions) {
+    return _buildInsightsCard(
+      icon: Icons.check_circle_outline,
+      iconColor: const Color(0xFF3ac0b5),
+      iconBgColor: const Color(0xFFE6F7F5),
+      title: "Suggested Actions",
+      subtitle: "Next steps for your property",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        children: actions.map((item) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  item.priority == 'high'
+                      ? Icons.priority_high
+                      : Icons.keyboard_arrow_right,
+                  color: item.priority == 'high'
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF64748B),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.action ?? "",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Color(0xFF1F2937))),
+                      if (item.impact != null)
+                        Text("Impact: ${item.impact}",
+                            style: const TextStyle(
+                                fontSize: 12, color: Color(0xFF6B7280))),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(Summary summary) {
+    return _buildInsightsCard(
+      icon: Icons.lightbulb_outline,
+      iconColor: const Color(0xFFF59E0B),
+      iconBgColor: const Color(0xFFFEF3C7),
+      title: summary.title ?? "Executive Summary",
+      subtitle: summary.subtitle ?? "At a glance",
+      badgeText: summary.scoreLabel ?? "",
+      badgeColor: const Color(0xFFFEF3C7),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Score: ${summary.overallScore}/100",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16)),
+              Text("Risk: ${summary.riskLevel?.toUpperCase()}",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: summary.riskLevel == 'high'
+                          ? Colors.red
+                          : Colors.green)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (summary.highlights != null)
+            ...summary.highlights!.map((h) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("• ",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Expanded(
+                            child: Text(h,
+                                style:
+                                    const TextStyle(color: Color(0xFF4B5563)))),
+                      ]),
+                )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBankRecommendationsCard(List<BankRecommendation> banks) {
+    return _buildInsightsCard(
+      icon: Icons.account_balance,
+      iconColor: const Color(0xFF3B82F6),
+      iconBgColor: const Color(0xFFDBEAFE),
+      title: "Recommended Banks",
+      subtitle: "Top options in your region",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        children: banks.map((bank) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(bank.bankName ?? "Unknown Bank",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text("${bank.interestRate}%",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF3B82F6),
+                            fontSize: 16)),
+                  ],
+                ),
+                if (bank.bestFor != null) ...[
+                  const SizedBox(height: 4),
+                  Text("Best for: ${bank.bestFor}",
+                      style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Color(0xFF6B7280),
+                          fontSize: 12)),
+                ],
+                const SizedBox(height: 8),
+                if (bank.pros != null && bank.pros!.isNotEmpty)
+                  Text("Pros: ${bank.pros!.join(', ')}",
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF10B981))),
+                if (bank.cons != null && bank.cons!.isNotEmpty)
+                  Text("Cons: ${bank.cons!.join(', ')}",
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFFEF4444))),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildNegotiationStrategiesCard(List<NegotiationStrategy> strategies) {
+    return _buildInsightsCard(
+      icon: Icons.handshake,
+      iconColor: const Color(0xFF8B5CF6),
+      iconBgColor: const Color(0xFFEDE9FE),
+      title: "Negotiation Strategies",
+      subtitle: "How to get a better deal",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        children: strategies.map((strategy) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(strategy.title ?? "Strategy",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 6),
+                Text(strategy.description ?? "",
+                    style: const TextStyle(
+                        fontSize: 13, color: Color(0xFF4B5563))),
+                if (strategy.steps != null && strategy.steps!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  const Text("Steps:",
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                  ...strategy.steps!.map((step) => Text("• $step",
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF6B7280)))),
+                ]
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildTaxImplicationsCard(TaxImplications tax) {
+    return _buildInsightsCard(
+      icon: Icons.receipt_long,
+      iconColor: const Color(0xFF06B6D4),
+      iconBgColor: const Color(0xFFCFFAFE),
+      title: "Tax Implications",
+      subtitle: "Region: ${tax.region ?? 'Unknown'}",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Interest Deductible?",
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+              Text(tax.deductibleInterest == true ? "Yes" : "No",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: tax.deductibleInterest == true
+                          ? Colors.green
+                          : Colors.red)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (tax.estimatedTaxSavings != null)
+            Text("Est. Annual Savings: \$${tax.estimatedTaxSavings}",
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 8),
+          if (tax.notes != null)
+            ...tax.notes!.map((note) => Text("• $note",
+                style:
+                    const TextStyle(fontSize: 13, color: Color(0xFF4B5563)))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInsuranceRecommendationsCard(
+      List<InsuranceRecommendation> insurances) {
+    return _buildInsightsCard(
+      icon: Icons.shield,
+      iconColor: const Color(0xFFEAB308),
+      iconBgColor: const Color(0xFFFEF9C3),
+      title: "Insurance Recommendations",
+      subtitle: "Protect your investment",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        children: insurances.map((ins) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(ins.required == true ? Icons.error : Icons.info,
+                    color: ins.required == true ? Colors.red : Colors.blue,
+                    size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(ins.type ?? "Insurance",
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      if (ins.recommendation != null)
+                        Text(ins.recommendation!,
+                            style: const TextStyle(
+                                fontSize: 13, color: Color(0xFF4B5563))),
+                      if (ins.estimatedMonthlyCost != null)
+                        Text("Est. Cost: \$${ins.estimatedMonthlyCost}/mo",
+                            style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280))),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildExtraPaymentImpactCard(ExtraPaymentImpact impact) {
+    return _buildInsightsCard(
+      icon: Icons.payments,
+      iconColor: const Color(0xFF10B981),
+      iconBgColor: const Color(0xFFD1FAE5),
+      title: "Extra Payment Impact",
+      subtitle: "Various scenarios based on extra payments",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (impact.lumpSum != null) ...[
+            const Text("Lump Sum Impact:",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(impact.lumpSum.toString(),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
+            const SizedBox(height: 8),
+          ],
+          if (impact.monthlyExtra != null) ...[
+            const Text("Monthly Extra Impact:",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(impact.monthlyExtra.toString(),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
+            const SizedBox(height: 8),
+          ],
+          if (impact.biweeklyPayments != null) ...[
+            const Text("Bi-Weekly Payments Impact:",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(impact.biweeklyPayments.toString(),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
+          ]
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmortizationSnapshotCard(AmortizationSnapshot snapshot) {
+    return _buildInsightsCard(
+      icon: Icons.table_chart,
+      iconColor: const Color(0xFF6366F1),
+      iconBgColor: const Color(0xFFE0E7FF),
+      title: "Amortization Snapshot",
+      subtitle: "A quick view of interest vs principal",
+      badgeText: "",
+      badgeColor: Colors.transparent,
+      content: Column(
+        children: [
+          _buildSnapshotRow(
+              "First Year Interest", "\$${snapshot.firstYearInterest ?? 0}"),
+          _buildSnapshotRow(
+              "First Year Principal", "\$${snapshot.firstYearPrincipal ?? 0}"),
+          const Divider(),
+          _buildSnapshotRow(
+              "Total Interest",
+              snapshot.totalInterestFormatted ??
+                  "\$${snapshot.totalInterest ?? 0}",
+              isBold: true),
+          _buildSnapshotRow("Total Cost",
+              snapshot.totalCostFormatted ?? "\$${snapshot.totalCost ?? 0}",
+              isBold: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSnapshotRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                  color: const Color(0xFF4B5563))),
+          Text(value,
+              style: TextStyle(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 14)),
         ],
       ),
     );
@@ -489,6 +1086,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Text(
@@ -500,7 +1098,8 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                             ),
                           ),
                         ),
-                        if (badgeText.isNotEmpty)
+                        if (badgeText.isNotEmpty) ...[
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
@@ -517,6 +1116,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                               ),
                             ),
                           ),
+                        ]
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -559,48 +1159,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Container(
-          //   width: double.infinity,
-          //   decoration: BoxDecoration(
-          //     color: Colors.white,
-          //     borderRadius: BorderRadius.circular(25),
-          //     boxShadow: [
-          //       BoxShadow(
-          //         color: Colors.black.withValues(alpha: 0.05),
-          //         spreadRadius: 2,
-          //         blurRadius: 15,
-          //         offset: const Offset(0, 5),
-          //       ),
-          //     ],
-          //   ),
-          //   child: Material(
-          //     color: Colors.transparent,
-          //     child: InkWell(
-          //       borderRadius: BorderRadius.circular(25),
-          //       onTap: () {},
-          //       child: const Padding(
-          //         padding: EdgeInsets.symmetric(vertical: 16),
-          //         child: Row(
-          //           mainAxisAlignment: MainAxisAlignment.center,
-          //           children: [
-          //             Icon(Icons.chat_bubble,
-          //                 color: Color(0xFF14EFCD), size: 20),
-          //             SizedBox(width: 8),
-          //             Text(
-          //               "Chat with Advisor",
-          //               style: TextStyle(
-          //                 color: Color(0xFF1F2937),
-          //                 fontWeight: FontWeight.bold,
-          //                 fontSize: 16,
-          //               ),
-          //             ),
-          //           ],
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
-          const SizedBox(height: 12),
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -623,18 +1181,18 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(25),
-                onTap: _handleGenerateStrategy,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                onTap: _isLoading ? null : _handleGenerateStrategy,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_circle,
+                      const Icon(Icons.check_circle,
                           color: Color(0xFF0F172A), size: 20),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
-                        "Generate Strategy",
-                        style: TextStyle(
+                        _isLoading ? "Generating..." : "Generate Strategy",
+                        style: const TextStyle(
                           color: Color(0xFF0F172A),
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
