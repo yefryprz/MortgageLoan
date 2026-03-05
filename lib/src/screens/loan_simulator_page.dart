@@ -222,7 +222,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawerEdgeDragWidth: MediaQuery.of(context).size.width,
+      drawerEnableOpenDragGesture: false,
       drawer: const CustomDrawer(currentRoute: "simulator"),
       backgroundColor: const Color(0xFFF6F8F9),
       bottomNavigationBar: CustomAdBanner(),

@@ -90,7 +90,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawerEdgeDragWidth: MediaQuery.of(context).size.width,
+      drawerEnableOpenDragGesture: false,
       drawer: const CustomDrawer(currentRoute: "compound"),
       appBar: AppBar(
         flexibleSpace: Container(
