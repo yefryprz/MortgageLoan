@@ -122,6 +122,15 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
     setState(() {}); // Simply triggers build to recalculate all derived values
   }
 
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _downPaymentController.dispose();
+    _rateController.dispose();
+    _extraPaymentController.dispose();
+    super.dispose();
+  }
+
   void _reset() {
     setState(() {
       _selectedLoanType = 0;
@@ -248,12 +257,12 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
         ),
         centerTitle: true,
         actions: [
-          TextButton(
-            onPressed: _reset,
-            child: const Text("Reset",
-                style: TextStyle(
-                    color: Color(0xFF3ac0b5), fontWeight: FontWeight.bold)),
-          )
+          // TextButton(
+          //   onPressed: _reset,
+          //   child: const Text("Reset",
+          //       style: TextStyle(
+          //           color: Color(0xFF3ac0b5), fontWeight: FontWeight.bold)),
+          // )
         ],
       ),
       body: SingleChildScrollView(

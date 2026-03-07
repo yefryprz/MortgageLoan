@@ -2,47 +2,48 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../models/ai_analysis_model.dart';
-import 'analytics_service.dart';
 
 class OpenRouterService {
+  static final RegExp _placeholderRegex = RegExp(r'\{\{.*?\}\}');
+
   static const String _systemPrompt = '''
-Eres un asesor experto en análisis de préstamos. Genera recomendaciones, estrategias de negociación y análisis comparativo.
-REGLAS: Responde ÚNICAMENTE en JSON válido según el schema dado. Usa datos reales de la región usando el idioma correspondiente.
+You are an expert loan analysis advisor. Generate recommendations, negotiation strategies, and comparative analysis.
+RULES: Respond ONLY in valid JSON matching the given schema. Use real-world data for the region. CAUTION: All market data, interest rates, and bank information MUST NOT be older than 2 years to avoid outdated information. All responses must be in English.
 ''';
 
   static const String _userPromptTemplate = '''
-Analiza el siguiente préstamo y genera recomendaciones financieras completas:
-DATOS DEL PRÉSTAMO:
+Analyze the following loan and generate comprehensive financial recommendations:
+LOAN DATA:
 
-- Región: {{region}}
-- Moneda: {{currency}}
-- Tipo de préstamo: {{loanType}} (Hipotecario | Vehículo | Corporativo | Personal)
-- Valor del bien / Monto del préstamo: {{propertyValue}}
-- Pago inicial (Down Payment): {{downPayment}} ({{downPaymentPercentage}}%)
-- Monto financiado: {{loanAmount}}
-- Tasa de interés: {{interestRate}}%
-- Duración: {{durationYears}} años
-- Pago mensual estimado: {{monthlyPayment}}
+- Region: {{region}}
+- Currency: {{currency}}
+- Loan Type: {{loanType}} (Mortgage | Vehicle | Corporate | Personal)
+- Property Value / Loan Amount: {{propertyValue}}
+- Down Payment: {{downPayment}} ({{downPaymentPercentage}}%)
+- Financed Amount: {{loanAmount}}
+- Interest Rate: {{interestRate}}%
+- Duration: {{durationYears}} years
+- Estimated Monthly Payment: {{monthlyPayment}}
 
-ESCENARIOS AVANZADOS (si los completó el usuario):
-- Pago extra único: {{lumpSumPayment}} en el año {{lumpSumYear}}
-- Objetivo de escenario: {{scenarioGoal}} (Reducir Pago | Acortar Plazo)
+ADVANCED SCENARIOS (if provided by user):
+- One-time extra payment: {{lumpSumPayment}} in year {{lumpSumYear}}
+- Scenario Goal: {{scenarioGoal}} (Reduce Payment | Shorten Term)
 
-CONTEXTO ADICIONAL:
-- Fecha de consulta: {{currentDate}}
+ADDITIONAL CONTEXT:
+- Current Date: {{currentDate}}
 
-INSTRUCCIONES:
-1. Genera una estrategia de pago óptima basada en el flujo de caja del usuario.
-2. Compara la tasa de interés del usuario con el promedio del mercado de su región.
-3. Identifica oportunidades de refinanciamiento.
-4. Sugiere los bancos/entidades más competitivos para este tipo de préstamo en la región.
-5. Proporciona estrategias de negociación con los bancos.
-6. Evalúa el riesgo financiero del préstamo.
-7. Calcula el impacto de pagos extra sobre el interés total.
-8. Incluye recomendaciones fiscales si aplica.
-9. Todas las respuestas deben estar en el idioma correspondiente a la región.
+INSTRUCTIONS:
+1. Generate an optimal repayment strategy based on the user's cash flow.
+2. Compare the user's interest rate with the market average for their region (use data from the last 2 years maximum).
+3. Identify refinancing opportunities.
+4. Suggest the most competitive banks/entities for this type of loan in the region (use data from the last 2 years maximum).
+5. Provide negotiation strategies with banks.
+6. Evaluate the financial risk of the loan.
+7. Calculate the impact of extra payments on total interest.
+8. Include tax recommendations if applicable.
+9. All text in your response MUST be in English.
 
-Responde ÚNICAMENTE con el siguiente JSON Array/Object schema, sin texto adicional:
+Respond ONLY with the following JSON Array/Object schema, without any additional text:
 ```json
 {
   "analysis": {
@@ -124,7 +125,7 @@ Responde ÚNICAMENTE con el siguiente JSON Array/Object schema, sin texto adicio
       userPrompt = userPrompt.replaceAll('{{$key}}', value.toString());
     });
     // For anything missing, replace with N/A
-    userPrompt = userPrompt.replaceAll(RegExp(r'\{\{.*?\}\}'), 'N/A');
+    userPrompt = userPrompt.replaceAll(_placeholderRegex, 'N/A');
 
     final response = await http.post(
       Uri.parse(apiUrl),

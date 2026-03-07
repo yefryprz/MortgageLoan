@@ -4,9 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:mortgageloan/src/services/currency_service.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:mortgageloan/src/utils/ad_helper.dart';
-import 'package:mortgageloan/src/database/hive.dart';
+import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
+import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class CurrencyConvertPage extends StatefulWidget {
   @override
@@ -36,8 +35,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   String _selectedRange = '24H'; // 24H, 1W, 1M, 3M, 6M, YTD
   Map<String, double> _timeseriesData = {};
 
-  InterstitialAd? _interstitialAd;
-  final LoanData _loanRepo = LoanData();
+  late final InterstitialAdHelper _adHelper;
 
   final _currencyFormat = intl.NumberFormat.currency(
     locale: 'en_US',
@@ -48,7 +46,9 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   @override
   void initState() {
     super.initState();
-    _loadInterstitialAd();
+    _adHelper =
+        InterstitialAdHelper(adCountKey: "currencyCount", adFrequency: 5);
+    _adHelper.load();
     _loadCurrencies().then((_) {
       _convertCurrency();
       _loadTimeseries();
@@ -57,40 +57,9 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
 
   @override
   void dispose() {
-    _interstitialAd?.dispose();
+    _adHelper.dispose();
     _amountController.dispose();
     super.dispose();
-  }
-
-  void _loadInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              _interstitialAd = null;
-              _loanRepo.resetAdCount("currencyCount");
-              _loadInterstitialAd(); // Load the next ad
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          _interstitialAd = null;
-        },
-      ),
-    );
-  }
-
-  Future<void> _showInterstitialAd() async {
-    if (_interstitialAd == null) return;
-    try {
-      await _interstitialAd!.show();
-    } catch (e) {
-      _loadInterstitialAd();
-    }
   }
 
   Future<void> _loadCurrencies() async {
@@ -167,10 +136,10 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
       ),
       centerTitle: true,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.white),
-          onPressed: () {},
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.more_vert, color: Colors.white),
+        //   onPressed: () {},
+        // ),
       ],
     );
   }
@@ -965,20 +934,19 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
         _isLoading = false;
       });
 
+      AnalyticsService.logEvent(
+        'currency_converted',
+        parameters: {
+          'from': _fromCurrency,
+          'to': _toCurrency,
+          'amount': _amount,
+        },
+      );
+
       String currentConversionPair = "$_fromCurrency-$_toCurrency";
       if (_lastConversionPair != currentConversionPair) {
         _lastConversionPair = currentConversionPair;
-        var adCount = await _loanRepo.getAdCount("currencyCount");
-        if (adCount >= 4) {
-          // 5 conversions
-          if (_interstitialAd != null) {
-            await _showInterstitialAd();
-          } else {
-            _loanRepo.resetAdCount("currencyCount");
-          }
-        } else {
-          _loanRepo.AdCountUp("currencyCount");
-        }
+        _adHelper.handleAdDetailNavigation(() {});
       }
     } catch (e) {
       if (mounted) {
@@ -1059,6 +1027,15 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
         endDate = DateTime.now();
       }
     }
+
+    AnalyticsService.logEvent(
+      'timeseries_viewed',
+      parameters: {
+        'from': _fromCurrency,
+        'to': _toCurrency,
+        'range': _selectedRange,
+      },
+    );
 
     try {
       final data = await _currencyService.getTimeSeries(

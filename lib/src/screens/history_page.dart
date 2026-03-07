@@ -5,8 +5,8 @@ import 'package:mortgageloan/src/models/compound_interest_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:intl/intl.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:mortgageloan/src/utils/ad_helper.dart';
+import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
+import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -22,55 +22,22 @@ class _HistoryPageState extends State<HistoryPage> {
       NumberFormat.currency(locale: 'en_US', symbol: '\$');
   final DateFormat _timeFormat = DateFormat('h:mm a');
 
-  InterstitialAd? _interstitialAd;
+  late final InterstitialAdHelper _adHelper;
 
   @override
   void initState() {
     super.initState();
-    _loadInterstitialAd();
+    _adHelper =
+        InterstitialAdHelper(adCountKey: "historyCount", adFrequency: 4);
+    _adHelper.load();
+    AnalyticsService.logEvent('history_viewed',
+        parameters: <String, Object>{'tab': 'Loans'});
   }
 
   @override
   void dispose() {
-    _interstitialAd?.dispose();
+    _adHelper.dispose();
     super.dispose();
-  }
-
-  void _loadInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              _interstitialAd = null;
-              loanRepo.resetAdCount("historyCount");
-              _loadInterstitialAd();
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          _interstitialAd = null;
-        },
-      ),
-    );
-  }
-
-  Future<void> _handleAdDetailNavigation(VoidCallback onNavigate) async {
-    onNavigate();
-    int adCount = await loanRepo.getAdCount("historyCount");
-    if (adCount >= 4) {
-      // 5 clicks
-      if (_interstitialAd != null) {
-        await _interstitialAd!.show();
-      } else {
-        loanRepo.resetAdCount("historyCount");
-      }
-    } else {
-      loanRepo.AdCountUp("historyCount");
-    }
   }
 
   @override
@@ -118,10 +85,10 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
       centerTitle: true,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.search, color: Color(0xFF6B7280)),
-          onPressed: () {},
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.search, color: Color(0xFF6B7280)),
+        //   onPressed: () {},
+        // ),
         IconButton(
           icon: const Icon(Icons.delete_sweep, color: Color(0xFF6B7280)),
           onPressed: () => _showClearAllConfirmDialog(context),
@@ -143,7 +110,11 @@ class _HistoryPageState extends State<HistoryPage> {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = 0),
+              onTap: () {
+                setState(() => _selectedTabIndex = 0);
+                AnalyticsService.logEvent('history_viewed',
+                    parameters: <String, Object>{'tab': 'Loans'});
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -168,7 +139,11 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = 1),
+              onTap: () {
+                setState(() => _selectedTabIndex = 1);
+                AnalyticsService.logEvent('history_viewed',
+                    parameters: <String, Object>{'tab': 'Investment'});
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -193,7 +168,11 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = 2),
+              onTap: () {
+                setState(() => _selectedTabIndex = 2);
+                AnalyticsService.logEvent('history_viewed',
+                    parameters: <String, Object>{'tab': 'AI Advisor'});
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -361,28 +340,33 @@ class _HistoryPageState extends State<HistoryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE6F7F5),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE6F7F5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.home,
+                          color: Color(0xFF3ac0b5), size: 18),
                     ),
-                    child: const Icon(Icons.home,
-                        color: Color(0xFF3ac0b5), size: 18),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    "Mortgage",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        "Mortgage",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 data.date != null ? _timeFormat.format(data.date!) : "",
                 style: const TextStyle(
@@ -495,7 +479,7 @@ class _HistoryPageState extends State<HistoryPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    _handleAdDetailNavigation(() {
+                    _adHelper.handleAdDetailNavigation(() {
                       Navigator.pushNamed(context, 'amortization',
                           arguments: data);
                     });
@@ -519,7 +503,7 @@ class _HistoryPageState extends State<HistoryPage> {
               const SizedBox(width: 12),
               OutlinedButton(
                 onPressed: () {
-                  _showDeleteConfirmDialog(context, () {
+                  _showDeleteConfirmDialog(context, 'loan', () {
                     setState(() {
                       loanRepo.deleteRecord(data.id);
                     });
@@ -564,28 +548,33 @@ class _HistoryPageState extends State<HistoryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE0F2FE),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE0F2FE),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.show_chart,
+                          color: Color(0xFF0284C7), size: 18),
                     ),
-                    child: const Icon(Icons.show_chart,
-                        color: Color(0xFF0284C7), size: 18),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    "Investment",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        "Investment",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 data.date != null ? _timeFormat.format(data.date!) : "",
                 style: const TextStyle(
@@ -623,47 +612,52 @@ class _HistoryPageState extends State<HistoryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "INITIAL PRINCIPAL",
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF9CA3AF),
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _currencyFormat.format(data.principal ?? 0).split('.')[0],
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937)),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "INITIAL PRINCIPAL",
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _currencyFormat.format(data.principal ?? 0).split('.')[0],
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937)),
+                    ),
+                  ],
+                ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    "INTEREST EARNED",
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF9CA3AF),
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "+${_currencyFormat.format((data.result ?? 0) - (data.principal ?? 0)).split('.')[0]}",
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF22C55E)),
-                  ),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      "INTEREST EARNED",
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "+${_currencyFormat.format((data.result ?? 0) - (data.principal ?? 0)).split('.')[0]}",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF22C55E)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -671,47 +665,52 @@ class _HistoryPageState extends State<HistoryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "INTEREST RATE",
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF9CA3AF),
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${data.rate?.toStringAsFixed(2) ?? '0.00'}%",
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937)),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "INTEREST RATE",
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "${data.rate?.toStringAsFixed(2) ?? '0.00'}%",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937)),
+                    ),
+                  ],
+                ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    "PERIOD",
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF9CA3AF),
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${data.years ?? 0} ${(data.years ?? 0) == 1 ? 'Year' : 'Years'}",
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937)),
-                  ),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      "PERIOD",
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "${data.years ?? 0} ${(data.years ?? 0) == 1 ? 'Year' : 'Years'}",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -737,7 +736,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         'endBalance': currentBalance,
                       });
                     }
-                    _handleAdDetailNavigation(() {
+                    _adHelper.handleAdDetailNavigation(() {
                       Navigator.pushNamed(context, 'compound_breakdown',
                           arguments: {
                             'principal': data.principal ?? 0,
@@ -766,7 +765,7 @@ class _HistoryPageState extends State<HistoryPage> {
               const SizedBox(width: 12),
               OutlinedButton(
                 onPressed: () {
-                  _showDeleteConfirmDialog(context, () {
+                  _showDeleteConfirmDialog(context, 'compound', () {
                     setState(() {
                       loanRepo.deleteCompoundInterest(data.id);
                     });
@@ -862,28 +861,33 @@ class _HistoryPageState extends State<HistoryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF0FDFA),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF0FDFA),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.psychology,
+                          color: Color(0xFF0D9488), size: 18),
                     ),
-                    child: const Icon(Icons.psychology,
-                        color: Color(0xFF0D9488), size: 18),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    "${loanData['loanType'] ?? 'Loan'} Analysis",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "${loanData['loanType'] ?? 'Loan'} Analysis",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 date != null ? _timeFormat.format(date) : "",
                 style: const TextStyle(
@@ -912,7 +916,7 @@ class _HistoryPageState extends State<HistoryPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    _handleAdDetailNavigation(() {
+                    _adHelper.handleAdDetailNavigation(() {
                       Navigator.pushNamed(context, 'ai_insights', arguments: {
                         ...loanData,
                         'savedResponse': response,
@@ -939,7 +943,7 @@ class _HistoryPageState extends State<HistoryPage> {
               const SizedBox(width: 12),
               OutlinedButton(
                 onPressed: () {
-                  _showDeleteConfirmDialog(context, () {
+                  _showDeleteConfirmDialog(context, 'ai', () {
                     setState(() {
                       loanRepo.deleteAiAnalysis(record["id"]);
                     });
@@ -982,7 +986,8 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  void _showDeleteConfirmDialog(BuildContext context, VoidCallback onDelete) {
+  void _showDeleteConfirmDialog(
+      BuildContext context, String itemType, VoidCallback onDelete) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1017,6 +1022,8 @@ class _HistoryPageState extends State<HistoryPage> {
             onPressed: () {
               Navigator.pop(context);
               onDelete();
+              AnalyticsService.logEvent('history_item_deleted',
+                  parameters: <String, Object>{'type': itemType});
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Record deleted')),
               );
@@ -1063,8 +1070,11 @@ class _HistoryPageState extends State<HistoryPage> {
               setState(() {
                 loanRepo.deleteAllRecord();
                 loanRepo.deleteAllCompoundInterest();
+                loanRepo.deleteAllAiAnalysis();
               });
               Navigator.pop(context);
+              AnalyticsService.logEvent('history_cleared',
+                  parameters: <String, Object>{'type': 'all'});
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('All records cleared')),
               );

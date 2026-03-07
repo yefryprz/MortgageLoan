@@ -59,7 +59,7 @@ class CompoundBreakdownPage extends StatelessWidget {
               children: [
                 Column(
                   children: [
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 75),
                     Expanded(child: _buildTableSection(allRows)),
                   ],
                 ),
@@ -73,7 +73,6 @@ class CompoundBreakdownPage extends StatelessWidget {
               ],
             ),
           ),
-          _buildExportButton(context),
         ],
       ),
     );
@@ -109,7 +108,7 @@ class CompoundBreakdownPage extends StatelessWidget {
   Widget _buildSummaryBar(
       double principal, double rate, double interest, double result) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -159,7 +158,7 @@ class CompoundBreakdownPage extends StatelessWidget {
 
   Widget _buildTableSection(List<CompoundRow> allRows) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       // No extra clipping or decoration, let table scroll smoothly
       child: Column(
         children: [
@@ -258,29 +257,6 @@ class CompoundBreakdownPage extends StatelessWidget {
           fontSize: 13,
         ),
         textAlign: align,
-      ),
-    );
-  }
-
-  Widget _buildExportButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 30, top: 10),
-      child: TextButton.icon(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('CSV export not implemented yet.')),
-          );
-        },
-        icon: const Icon(Icons.download_outlined,
-            color: Color(0xFF3ac0b5), size: 20),
-        label: const Text(
-          "Export as CSV",
-          style: TextStyle(
-            color: Color(0xFF3ac0b5),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
       ),
     );
   }

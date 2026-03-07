@@ -5,8 +5,8 @@ import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/models/compound_interest_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:mortgageloan/src/utils/ad_helper.dart';
+import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
+import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class CompoundInterestPage extends StatefulWidget {
   @override
@@ -33,7 +33,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
 
   final _numberFormat = intl.NumberFormat("#,###", "en_US");
 
-  InterstitialAd? _interstitialAd;
+  late final InterstitialAdHelper _adHelper;
   final loanRepo = LoanData();
 
   @override
@@ -43,47 +43,18 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
     _rateController.text = _rate.toStringAsFixed(2);
     _yearsController.text = _years.toString();
     calculate();
-    _loadInterstitialAd();
+    _adHelper =
+        InterstitialAdHelper(adCountKey: "compoundCount", adFrequency: 3);
+    _adHelper.load();
   }
 
   @override
   void dispose() {
-    _interstitialAd?.dispose();
+    _adHelper.dispose();
     _principalController.dispose();
     _rateController.dispose();
     _yearsController.dispose();
     super.dispose();
-  }
-
-  void _loadInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
-      request: AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              _interstitialAd = null;
-              loanRepo.resetAdCount("compoundCount");
-              _loadInterstitialAd();
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          _interstitialAd = null;
-        },
-      ),
-    );
-  }
-
-  Future<void> _showInterstitialAd() async {
-    if (_interstitialAd == null) return;
-    try {
-      await _interstitialAd!.show();
-    } catch (e) {
-      _loadInterstitialAd();
-    }
   }
 
   @override
@@ -782,12 +753,23 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
     // Save calculation before navigating
     _saveCalculationSilent();
 
-    Navigator.pushNamed(context, "compound_breakdown", arguments: {
-      'principal': _principal,
-      'rate': _rate,
-      'years': _years,
-      'result': _result,
-      'yearlyDetails': _yearlyDetails
+    AnalyticsService.logEvent(
+      'compound_calculated',
+      parameters: {
+        'principal': _principal,
+        'rate': _rate,
+        'years': _years,
+      },
+    );
+
+    _adHelper.handleAdDetailNavigation(() {
+      Navigator.pushNamed(context, "compound_breakdown", arguments: {
+        'principal': _principal,
+        'rate': _rate,
+        'years': _years,
+        'result': _result,
+        'yearlyDetails': _yearlyDetails
+      });
     });
   }
 
@@ -809,18 +791,6 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
         );
         loanRepo.saveCompoundInterest(calculation);
       }
-    }
-
-    var adCount = await loanRepo.getAdCount("compoundCount");
-    if (adCount >= 2) {
-      // 3 clicks
-      if (_interstitialAd != null) {
-        await _showInterstitialAd();
-      } else {
-        loanRepo.resetAdCount("compoundCount");
-      }
-    } else {
-      loanRepo.AdCountUp("compoundCount");
     }
   }
 }

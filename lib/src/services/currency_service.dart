@@ -1,19 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mortgageloan/src/services/cache_service.dart';
 
 class CurrencyService {
   static final String _baseUrl = dotenv.get('CURRENCY_BASE_URL', fallback: '');
   static final String _bearerToken = dotenv.get('CURRENCY_TOKEN', fallback: '');
 
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
   Future<double> convertCurrency(
       String fromCurrency, String toCurrency, double amount,
       [DateTime? date]) async {
     try {
-      final String dateStr = date != null
-          ? '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'
-          : '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}';
+      final String dateStr =
+          date != null ? _formatDate(date) : _formatDate(DateTime.now());
 
       final queryParams = {
         'base': fromCurrency,
@@ -27,7 +31,7 @@ class CurrencyService {
           'Authorization': 'Bearer $_bearerToken',
           'Content-Type': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -50,10 +54,8 @@ class CurrencyService {
   Future<Map<String, double>> getTimeSeries(String fromCurrency,
       String toCurrency, DateTime startDate, DateTime endDate) async {
     try {
-      final String startStr =
-          '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}';
-      final String endStr =
-          '${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}';
+      final String startStr = _formatDate(startDate);
+      final String endStr = _formatDate(endDate);
 
       // Use api_key query param for timeseries endpoint as requested
       final queryParams = {
@@ -69,7 +71,7 @@ class CurrencyService {
         headers: {
           'Content-Type': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -97,14 +99,14 @@ class CurrencyService {
         if (response.statusCode == 401 ||
             response.statusCode == 403 ||
             response.statusCode == 429) {
-          print(
+          debugPrint(
               'API Error ${response.statusCode}, using fallback timeseries data');
           return _generateFallbackTimeseries(startDate, endDate);
         }
         throw Exception('Failed to load timeseries: ${response.body}');
       }
     } catch (e) {
-      print('Exception in getTimeSeries: $e');
+      debugPrint('Exception in getTimeSeries: $e');
       // Return fallback so UI can continue
       return _generateFallbackTimeseries(startDate, endDate);
     }
@@ -116,8 +118,7 @@ class CurrencyService {
     DateTime current = start;
     double baseVal = 1.0;
     while (current.isBefore(end) || current.isAtSameMomentAs(end)) {
-      final dateStr =
-          '${current.year}-${current.month.toString().padLeft(2, '0')}-${current.day.toString().padLeft(2, '0')}';
+      final dateStr = _formatDate(current);
       // Sine wave pattern for testing
       data[dateStr] = baseVal + (0.05 * current.day % 10);
       current = current.add(const Duration(days: 1));
@@ -139,7 +140,7 @@ class CurrencyService {
           'Authorization': 'Bearer $_bearerToken',
           'Content-Type': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);

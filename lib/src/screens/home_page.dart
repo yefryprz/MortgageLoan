@@ -1,15 +1,14 @@
 import 'dart:math';
-import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:mortgageloan/src/utils/ad_helper.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:upgrader/upgrader.dart';
+import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
+import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -36,7 +35,7 @@ class _HomePageState extends State<HomePage> {
   );
   final _numberFormat = intl.NumberFormat("#,###", "en_US");
 
-  InterstitialAd? _interstitialAd;
+  late final InterstitialAdHelper _adHelper;
 
   @override
   void initState() {
@@ -45,12 +44,14 @@ class _HomePageState extends State<HomePage> {
     _interestRateController.text = _interestRate.toStringAsFixed(2);
     _loanPeriodController.text = _loanPeriod.toString();
     calc();
-    _loadInterstitialAd();
+    _adHelper =
+        InterstitialAdHelper(adCountKey: "amortizationCount", adFrequency: 2);
+    _adHelper.load();
   }
 
   @override
   void dispose() {
-    _interstitialAd?.dispose();
+    _adHelper.dispose();
     _loanAmountController.dispose();
     _interestRateController.dispose();
     _loanPeriodController.dispose();
@@ -546,41 +547,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _loadInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
-      request: AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              _interstitialAd = null;
-              loanRepo.resetAdCount("amortizationCount");
-              _loadInterstitialAd();
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          _interstitialAd = null;
-        },
-      ),
-    );
-  }
-
-  Future<void> _showInterstitialAd() async {
-    if (_interstitialAd == null) return;
-    try {
-      await _interstitialAd!.show();
-    } catch (e) {
-      _loadInterstitialAd();
-    }
-  }
-
   void goToAmortization() async {
     if (await validField()) {
-      var qty = await loanRepo.getAdCount("amortizationCount");
-
       final loan = Loan(
         amount: _loanAmount,
         payment: _payment,
@@ -589,18 +557,19 @@ class _HomePageState extends State<HomePage> {
         totalInterest: _totalInterest,
       );
 
-      if (qty >= 2) {
-        if (_interstitialAd != null) {
-          await _showInterstitialAd();
-        } else {
-          loanRepo.resetAdCount("amortizationCount");
-        }
-      } else {
-        loanRepo.AdCountUp("amortizationCount");
-      }
+      AnalyticsService.logEvent(
+        'amortization_generated',
+        parameters: {
+          'amount': _loanAmount,
+          'rate': _interestRate,
+          'term': _loanPeriod,
+        },
+      );
 
       loanRepo.insertRecord(loan);
-      Navigator.pushNamed(context, "amortization", arguments: loan);
+      _adHelper.handleAdDetailNavigation(() {
+        Navigator.pushNamed(context, "amortization", arguments: loan);
+      });
     }
   }
 

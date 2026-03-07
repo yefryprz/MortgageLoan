@@ -24,6 +24,11 @@ class _AmortizationPageState extends State<AmortizationPage> {
   int _currentPage = 0;
   late PageController _pageController;
 
+  static final _currencyFormatter =
+      NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2);
+  static final _currencyWholeFormatter =
+      NumberFormat.currency(locale: 'en_US', symbol: '\$', decimalDigits: 0);
+
   @override
   void initState() {
     super.initState();
@@ -38,16 +43,12 @@ class _AmortizationPageState extends State<AmortizationPage> {
 
   String formatCurrency(double value) {
     if (value < 0) value = 0;
-    final formatter =
-        NumberFormat.currency(locale: 'en_US', symbol: '', decimalDigits: 2);
-    return formatter.format(value);
+    return _currencyFormatter.format(value);
   }
 
   String formatCurrencyWhole(double value) {
     if (value < 0) value = 0;
-    final formatter =
-        NumberFormat.currency(locale: 'en_US', symbol: '\$', decimalDigits: 0);
-    return formatter.format(value);
+    return _currencyWholeFormatter.format(value);
   }
 
   List<AmortizationRow> _generateRows(
@@ -104,7 +105,7 @@ class _AmortizationPageState extends State<AmortizationPage> {
                   children: [
                     const SizedBox(
                         height:
-                            60), // Further reduced space before 'MONTHLY BREAKDOWN'
+                            75), // Increased space before 'MONTHLY BREAKDOWN'
                     Expanded(child: _buildTableSection(allRows, totalYears)),
                   ],
                 ),
@@ -157,15 +158,16 @@ class _AmortizationPageState extends State<AmortizationPage> {
                   letterSpacing: 1.2,
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.share, color: Colors.white),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Share logic not implemented yet.')),
-                  );
-                },
-              ),
+              const SizedBox(width: 48),
+              // IconButton(
+              //   icon: const Icon(Icons.share, color: Colors.white),
+              //   onPressed: () {
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       const SnackBar(
+              //           content: Text('Share logic not implemented yet.')),
+              //     );
+              //   },
+              // ),
             ],
           ),
           const SizedBox(height: 30),
@@ -288,7 +290,7 @@ class _AmortizationPageState extends State<AmortizationPage> {
     String payoffStr = DateFormat('MMM yyyy').format(payoff);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -342,7 +344,7 @@ class _AmortizationPageState extends State<AmortizationPage> {
       children: [
         Padding(
           padding:
-              const EdgeInsets.only(left: 24, right: 24, top: 0, bottom: 0),
+              const EdgeInsets.only(left: 24, right: 24, top: 4, bottom: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -353,20 +355,6 @@ class _AmortizationPageState extends State<AmortizationPage> {
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('CSV download logical not implemented yet.')),
-                  );
-                },
-                icon: const Icon(Icons.download,
-                    size: 16, color: Color(0xFF3ac0b5)),
-                label: const Text("CSV",
-                    style: TextStyle(
-                        color: Color(0xFF3ac0b5), fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -432,7 +420,7 @@ class _AmortizationPageState extends State<AmortizationPage> {
 
   Widget _buildPageTable(List<AmortizationRow> rows) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),

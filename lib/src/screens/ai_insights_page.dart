@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mortgageloan/src/database/hive.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:mortgageloan/src/utils/ad_helper.dart';
+import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
 import '../models/ai_analysis_model.dart';
 import '../services/openrouter_service.dart';
+import '../services/analytics_service.dart';
 
 class AiInsightsPage extends StatefulWidget {
   const AiInsightsPage({Key? key}) : super(key: key);
@@ -15,7 +15,7 @@ class AiInsightsPage extends StatefulWidget {
 }
 
 class _AiInsightsPageState extends State<AiInsightsPage> {
-  InterstitialAd? _interstitialAd;
+  late final InterstitialAdHelper _adHelper;
   final loanRepo = LoanData();
 
   bool _isLoading = false;
@@ -31,7 +31,8 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   @override
   void initState() {
     super.initState();
-    _loadInterstitialAd();
+    _adHelper = InterstitialAdHelper(adCountKey: "aiCount", adFrequency: 1);
+    _adHelper.load();
     Future.delayed(Duration.zero, () {
       _checkUsageLimit();
     });
@@ -67,31 +68,8 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
 
   @override
   void dispose() {
-    _interstitialAd?.dispose();
+    _adHelper.dispose();
     super.dispose();
-  }
-
-  void _loadInterstitialAd() {
-    InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              _interstitialAd = null;
-              loanRepo.resetAdCount("aiCount");
-              _loadInterstitialAd();
-              _fetchAiAnalysis(); // Call AI after ad finishes
-            },
-          );
-        },
-        onAdFailedToLoad: (err) {
-          _interstitialAd = null;
-        },
-      ),
-    );
   }
 
   Future<void> _handleGenerateStrategy() async {
@@ -111,11 +89,15 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     }
 
     // Always show ad after EACH analysis as requested
-    if (_interstitialAd != null) {
-      await _interstitialAd!.show();
-    } else {
+    AnalyticsService.logEvent('ai_analysis_requested',
+        parameters: <String, Object>{
+          'loan_type': _args['loanType'] ?? 'Mortgage',
+          'region': _args['region'] ?? 'Global'
+        });
+
+    _adHelper.handleAdDetailNavigation(() {
       _fetchAiAnalysis();
-    }
+    });
   }
 
   Future<void> _fetchAiAnalysis() async {
@@ -135,12 +117,20 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
         _analysisResult = result;
         _isLoading = false;
       });
+
+      AnalyticsService.logEvent('ai_analysis_completed',
+          parameters: <String, Object>{
+            'loan_type': _args['loanType'] ?? 'Mortgage',
+            'score': result.analysis?.summary?.overallScore ?? 0,
+          });
       _checkUsageLimit();
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
+      AnalyticsService.logEvent('ai_analysis_failed',
+          parameters: <String, Object>{'error': e.toString()});
     }
   }
 
@@ -178,6 +168,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                 _buildSmartAdvisorHeader(),
                 const SizedBox(height: 24),
                 _buildAnalysisCompleteCard(loanType, country),
+                _buildAiDisclaimer(),
                 const SizedBox(height: 32),
                 const Align(
                   alignment: Alignment.centerLeft,
@@ -457,11 +448,13 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                     const Icon(Icons.language,
                         size: 16, color: Color(0xFF3ac0b5)),
                     const SizedBox(width: 6),
-                    Text(
-                      "Optimized for $country Market",
-                      style: const TextStyle(
-                        color: Color(0xFF6B7280),
-                        fontSize: 13,
+                    Expanded(
+                      child: Text(
+                        "Optimized for $country Market",
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],
@@ -811,9 +804,12 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Score: ${summary.overallScore}/100",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16)),
+              Expanded(
+                child: Text("Score: ${summary.overallScore}/100",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+              const SizedBox(width: 8),
               Text("Risk: ${summary.riskLevel?.toUpperCase()}",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -967,8 +963,11 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Interest Deductible?",
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              const Expanded(
+                child: Text("Interest Deductible?",
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+              const SizedBox(width: 8),
               Text(tax.deductibleInterest == true ? "Yes" : "No",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -1111,11 +1110,15 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                  color: const Color(0xFF4B5563))),
+          Expanded(
+            child: Text(label,
+                style: TextStyle(
+                    fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                    color: const Color(0xFF4B5563))),
+          ),
+          const SizedBox(width: 8),
           Text(value,
               style: TextStyle(
                   fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -1281,6 +1284,35 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                     ],
                   ),
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiDisclaimer() {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEFCE8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFEF9C3)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline, color: Color(0xFFA16207), size: 18),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              "Disclaimer: AI recommendations are for informational purposes only and may not reflect current market reality. AI can make mistakes or base results on outdated information.",
+              style: TextStyle(
+                color: Color(0xFF854D0E),
+                fontSize: 11,
+                height: 1.4,
               ),
             ),
           ),
