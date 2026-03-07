@@ -1,11 +1,12 @@
 import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AdHelper {
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-4574158711047577/3296197854';
+      return dotenv.get('ADMOB_BANNER_ANDROID', fallback: '');
     } else if (Platform.isIOS) {
-      return 'ca-app-pub-4574158711047577/5477839021';
+      return dotenv.get('ADMOB_BANNER_IOS', fallback: '');
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -13,9 +14,9 @@ class AdHelper {
 
   static String get interstitialAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-4574158711047577/2851708247';
+      return dotenv.get('ADMOB_INTERSTITIAL_ANDROID', fallback: '');
     } else if (Platform.isIOS) {
-      return 'ca-app-pub-4574158711047577/4568082033';
+      return dotenv.get('ADMOB_INTERSTITIAL_IOS', fallback: '');
     } else {
       throw UnsupportedError('Unsupported platform');
     }

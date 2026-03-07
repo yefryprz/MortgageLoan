@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mortgageloan/src/services/cache_service.dart';
 
 class CurrencyService {
-  static const String _baseUrl = 'https://api.currencybeacon.com/v1';
-  static const String _bearerToken = 'mvhREoY2f8UjpJ45vjT7RVn7JSvihea4';
+  static final String _baseUrl = dotenv.get('CURRENCY_BASE_URL', fallback: '');
+  static final String _bearerToken = dotenv.get('CURRENCY_TOKEN', fallback: '');
 
   Future<double> convertCurrency(
       String fromCurrency, String toCurrency, double amount,

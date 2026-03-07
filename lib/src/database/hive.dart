@@ -124,7 +124,7 @@ class LoanData {
     final box = await Hive.openBox("ai_usage");
     final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final int count = box.get(today) ?? 0;
-    return count < 3;
+    return count < 1;
   }
 
   Future<void> incrementAiAnalysisCount() async {
@@ -138,7 +138,7 @@ class LoanData {
     final box = await Hive.openBox("ai_usage");
     final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final int count = box.get(today) ?? 0;
-    return (3 - count).clamp(0, 3);
+    return (1 - count).clamp(0, 1);
   }
 
   Future<T?> getValue<T>(String key) async {

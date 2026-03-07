@@ -26,7 +26,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   final OpenRouterService _aiService = OpenRouterService();
 
   bool _isHistory = false;
-  int _remainingAnalyses = 3;
+  int _remainingAnalyses = 1;
 
   @override
   void initState() {
@@ -102,7 +102,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Only 3 AI evaluations are allowed per day.'),
+            content: Text('Only 1 AI evaluation is allowed per day.'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -251,7 +251,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            "Remaining evaluations today: $_remainingAnalyses/3",
+                            "Remaining evaluations today: $_remainingAnalyses/1",
                             style: const TextStyle(
                                 color: Color(0xFF3ac0b5),
                                 fontWeight: FontWeight.bold,
@@ -259,7 +259,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            "Only 3 AI evaluations are allowed per day.",
+                            "Only 1 AI evaluation is allowed per day.",
                             style: TextStyle(
                                 color: Color(0xFF9CA3AF), fontSize: 11),
                           ),

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:mortgageloan/src/services/cache_service.dart';
@@ -32,6 +34,8 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final NumberFormat _currencyFormat =
       NumberFormat.currency(locale: 'en_US', symbol: '\$');
+  final NumberFormat _thousandSeparatorFormat =
+      NumberFormat('#,##0.00', 'en_US');
 
   // API State
   List<Country> _countries = [];
@@ -121,15 +125,17 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
   void _reset() {
     setState(() {
       _selectedLoanType = 0;
-      _amountController.text = "450000";
       _amount = 450000;
-      _downPaymentController.text = "90000";
+      _amountController.text = _thousandSeparatorFormat.format(_amount);
       _downPayment = 90000;
-      _rateController.text = "5.5";
+      _downPaymentController.text =
+          _thousandSeparatorFormat.format(_downPayment);
       _rate = 5.5;
+      _rateController.text = "5.5";
       _durationYears = 30;
-      _extraPaymentController.text = "10000";
       _extraPaymentAmount = 10000;
+      _extraPaymentController.text =
+          _thousandSeparatorFormat.format(_extraPaymentAmount);
       _lumpSumYear = 5;
     });
   }
@@ -488,13 +494,14 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
           _amount = val;
           if (_downPayment > _amount) {
             _downPayment = _amount * 0.2; // reset to 20%
-            _downPaymentController.text = _downPayment.toStringAsFixed(0);
+            _downPaymentController.text =
+                _thousandSeparatorFormat.format(_downPayment);
           }
           _recalculate();
         }),
-        _buildSlider(_amount, 1000, 1000000, (val) {
+        _buildSlider(_amount, 1000, 100000000, (val) {
           _amount = val;
-          _amountController.text = val.toStringAsFixed(0);
+          _amountController.text = _thousandSeparatorFormat.format(val);
           _recalculate();
         }),
 
@@ -503,7 +510,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
         // Down Payment (Not applicable for Consumer Loans)
         if (_selectedLoanType != 2) ...[
           _buildInputRow(
-            "Down Payment (${_amount > 0 ? ((_downPayment / _amount) * 100).toStringAsFixed(0) : '0'}%)",
+            "Down Payment (${_amount > 0 ? ((_downPayment / _amount) * 100).toStringAsFixed(2) : '0'}%)",
             _downPaymentController,
             "\$",
             (val) {
@@ -515,7 +522,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
           ),
           _buildSlider(_downPayment, 0, _amount > 0 ? _amount : 1000, (val) {
             _downPayment = val;
-            _downPaymentController.text = val.toStringAsFixed(0);
+            _downPaymentController.text = _thousandSeparatorFormat.format(val);
             _recalculate();
           }),
           const SizedBox(height: 16),
@@ -641,7 +648,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
                   fontWeight: FontWeight.w500)),
         ),
         Container(
-          width: 120,
+          width: 160,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
@@ -668,8 +675,15 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.zero),
+                  inputFormatters: [CurrencyInputFormatter()],
                   onChanged: (val) {
-                    double parsed = double.tryParse(val) ?? 0;
+                    // Remove commas for parsing
+                    final cleanVal = val.replaceAll(',', '');
+                    double parsed = double.tryParse(cleanVal) ?? 0;
+
+                    // Update controller text with separators if needed
+                    // Doing this on every keystroke might be tricky with cursor position
+                    // but since the numeric value is what matters for calculation:
                     onChanged(parsed);
                   },
                 ),
@@ -887,7 +901,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
                 ),
               ),
               Container(
-                width: 100,
+                width: 140,
                 height: 36,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
@@ -912,8 +926,10 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
                             border: InputBorder.none,
                             isDense: true,
                             contentPadding: EdgeInsets.zero),
+                        inputFormatters: [CurrencyInputFormatter()],
                         onChanged: (val) {
-                          _extraPaymentAmount = double.tryParse(val) ?? 0;
+                          final cleanVal = val.replaceAll(',', '');
+                          _extraPaymentAmount = double.tryParse(cleanVal) ?? 0;
                           _recalculate();
                         },
                       ),
@@ -1105,6 +1121,70 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+
+    // Only allow numbers, commas, and one decimal point
+    final regExp = RegExp(r'^\d*[0-9,]*\.?\d*$');
+    if (!regExp.hasMatch(newValue.text)) {
+      return oldValue;
+    }
+
+    String cleanText = newValue.text.replaceAll(',', '');
+
+    // Split into integer and decimal parts
+    final parts = cleanText.split('.');
+    String integerPart = parts[0];
+    String? decimalPart = parts.length > 1 ? parts[1] : null;
+
+    // Format integer part
+    if (integerPart.isNotEmpty) {
+      final intValue = int.tryParse(integerPart);
+      if (intValue == null && integerPart != '') return oldValue;
+      if (intValue != null) {
+        integerPart = NumberFormat('#,###', 'en_US').format(intValue);
+      }
+    }
+
+    String formattedText =
+        integerPart + (decimalPart != null ? '.$decimalPart' : '');
+
+    // Improved cursor position calculation
+    int oldOffset = oldValue.selection.end;
+    int oldTextLength = oldValue.text.length;
+    int oldCommasBefore = 0;
+    for (int i = 0; i < min(oldOffset, oldTextLength); i++) {
+      if (oldValue.text[i] == ',') oldCommasBefore++;
+    }
+    int rawOffsetBefore = oldOffset - oldCommasBefore;
+
+    // Digits added or removed
+    int digitDiff = newValue.text.replaceAll(',', '').length -
+        oldValue.text.replaceAll(',', '').length;
+    int targetRawOffset = rawOffsetBefore + digitDiff;
+
+    int newOffset = 0;
+    int rawCount = 0;
+    while (newOffset < formattedText.length && rawCount < targetRawOffset) {
+      if (formattedText[newOffset] != ',') {
+        rawCount++;
+      }
+      newOffset++;
+    }
+
+    return TextEditingValue(
+      text: formattedText,
+      selection:
+          TextSelection.collapsed(offset: min(newOffset, formattedText.length)),
     );
   }
 }

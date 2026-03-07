@@ -8,6 +8,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mortgageloan/firebase_options.dart';
 import 'package:mortgageloan/src/router/routes.dart';
+import 'package:mortgageloan/src/services/analytics_service.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -77,6 +78,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Mortgage Loan',
         routes: routes(),
+        navigatorObservers: [AnalyticsService.getObserver()],
         initialRoute: "/");
   }
 }

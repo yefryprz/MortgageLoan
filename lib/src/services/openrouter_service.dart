@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../models/ai_analysis_model.dart';
+import 'analytics_service.dart';
 
 class OpenRouterService {
   static const String _systemPrompt = '''
@@ -39,6 +40,7 @@ INSTRUCCIONES:
 6. Evalúa el riesgo financiero del préstamo.
 7. Calcula el impacto de pagos extra sobre el interés total.
 8. Incluye recomendaciones fiscales si aplica.
+9. Todas las respuestas deben estar en el idioma correspondiente a la región.
 
 Responde ÚNICAMENTE con el siguiente JSON Array/Object schema, sin texto adicional:
 ```json
@@ -107,9 +109,12 @@ Responde ÚNICAMENTE con el siguiente JSON Array/Object schema, sin texto adicio
   Future<AiAnalysisResponse> getAiAnalysis({
     required Map<String, dynamic> loanData,
   }) async {
-    final apiKey = dotenv.env['OPENROUTER_API_KEY'];
+    final apiKey = dotenv.env['AI_API_KEY'];
+    final apiUrl = dotenv.env['AI_API_URL'] ?? '';
+    final aiModel = dotenv.env['AI_MODEL'] ?? '';
+
     if (apiKey == null || apiKey.isEmpty || apiKey == 'your_key_here') {
-      throw Exception('OPENROUTER_API_KEY not found in .env');
+      throw Exception('AI_API_KEY not found in .env');
     }
 
     String userPrompt = _userPromptTemplate;
@@ -122,14 +127,14 @@ Responde ÚNICAMENTE con el siguiente JSON Array/Object schema, sin texto adicio
     userPrompt = userPrompt.replaceAll(RegExp(r'\{\{.*?\}\}'), 'N/A');
 
     final response = await http.post(
-      Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+      Uri.parse(apiUrl),
       headers: {
         'Authorization': 'Bearer $apiKey',
         'Content-Type': 'application/json',
         'X-OpenRouter-Title': 'Loan Calculator AI',
       },
       body: jsonEncode({
-        'model': 'qwen/qwen3-235b-a22b-thinking-2507',
+        'model': aiModel,
         'response_format': {'type': 'json_object'},
         'messages': [
           {
@@ -141,8 +146,8 @@ Responde ÚNICAMENTE con el siguiente JSON Array/Object schema, sin texto adicio
             'content': userPrompt,
           }
         ],
-        'temperature': 0.1,
-        'max_tokens': 2000,
+        'temperature': 0.3,
+        'max_tokens': 4000,
       }),
     );
 

@@ -26,10 +26,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -57,6 +54,16 @@ class DefaultFirebaseOptions {
     appId: '1:432481196759:android:bede7cc375dfe383a42e92',
     messagingSenderId: '432481196759',
     projectId: 'morgageloan-ad303',
-    storageBucket: 'morgageloan-ad303.appspot.com',
+    storageBucket: 'morgageloan-ad303.firebasestorage.app',
   );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAqmLgt6dcf2JEmD4Hs8L7VQ5atffYnGHc',
+    appId: '1:432481196759:ios:49fa639a58315061a42e92',
+    messagingSenderId: '432481196759',
+    projectId: 'morgageloan-ad303',
+    storageBucket: 'morgageloan-ad303.firebasestorage.app',
+    iosBundleId: 'com.dysoft.mortgageloan',
+  );
+
 }
