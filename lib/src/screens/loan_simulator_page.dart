@@ -131,24 +131,6 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
     super.dispose();
   }
 
-  void _reset() {
-    setState(() {
-      _selectedLoanType = 0;
-      _amount = 450000;
-      _amountController.text = _thousandSeparatorFormat.format(_amount);
-      _downPayment = 90000;
-      _downPaymentController.text =
-          _thousandSeparatorFormat.format(_downPayment);
-      _rate = 5.5;
-      _rateController.text = "5.5";
-      _durationYears = 30;
-      _extraPaymentAmount = 10000;
-      _extraPaymentController.text =
-          _thousandSeparatorFormat.format(_extraPaymentAmount);
-      _lumpSumYear = 5;
-    });
-  }
-
   double _calculateMonthlyPayment(
       double principal, double annualRate, int years) {
     if (annualRate == 0) return principal / (years * 12);
