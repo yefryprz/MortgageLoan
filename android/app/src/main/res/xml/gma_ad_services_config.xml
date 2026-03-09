@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ad-services-config>
+    <!-- Include all to support Google Mobile Ads Provider-->
+    <custom-audience-allow-list>
+        <allow-list allow-all="true"/>
+    </custom-audience-allow-list>
+    <ad-selection-allow-list>
+        <allow-list allow-all="true"/>
+    </ad-selection-allow-list>
+    <attribution-allow-list>
+        <allow-list allow-all="true"/>
+    </attribution-allow-list>
+    <topics-allow-list>
+        <allow-list allow-all="true"/>
+    </topics-allow-list>
+    <protected-signals-allow-list>
+        <allow-list allow-all="true"/>
+    </protected-signals-allow-list>
+</ad-services-config>

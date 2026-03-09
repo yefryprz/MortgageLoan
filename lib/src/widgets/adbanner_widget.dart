@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:mortgageloan/src/utils/ad_helper.dart';
 
 class CustomAdBanner extends StatefulWidget {
-  final String? amount;
-  final Function? acction;
-
-  const CustomAdBanner({Key? key, this.amount, this.acction}) : super(key: key);
+  const CustomAdBanner({Key? key}) : super(key: key);
 
   @override
   _CustomAdBannerState createState() => _CustomAdBannerState();
@@ -22,20 +20,28 @@ class _CustomAdBannerState extends State<CustomAdBanner> {
   }
 
   @override
+  void dispose() {
+    bannerAd.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return isLoaded
-        ? SizedBox(
-            height: bannerAd.size.height.toDouble(),
-            width: bannerAd.size.width.toDouble(),
-            child: AdWidget(ad: bannerAd),
-          )
-        : SizedBox();
+    return SafeArea(
+      child: isLoaded
+          ? SizedBox(
+              height: bannerAd.size.height.toDouble(),
+              width: bannerAd.size.width.toDouble(),
+              child: AdWidget(ad: bannerAd),
+            )
+          : const SizedBox(height: 50),
+    );
   }
 
   initBannerAd() {
     bannerAd = new BannerAd(
         size: AdSize.banner,
-        adUnitId: "",
+        adUnitId: AdHelper.bannerAdUnitId,
         listener: BannerAdListener(
           onAdLoaded: (ad) {
             setState(() {
@@ -44,7 +50,7 @@ class _CustomAdBannerState extends State<CustomAdBanner> {
           },
           onAdFailedToLoad: (ad, error) {
             ad.dispose();
-            print(error);
+            debugPrint('Ad failed: $error');
           },
         ),
         request: const AdRequest());

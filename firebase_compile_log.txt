@@ -1,0 +1,740 @@
+Initialized native services in: /Users/daybinpp/.gradle/native
+Initialized jansi services in: /Users/daybinpp/.gradle/native
+Received JVM installation metadata from '/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home': {JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home, JAVA_VERSION=21.0.1, JAVA_VENDOR=Oracle Corporation, RUNTIME_NAME=Java(TM) SE Runtime Environment, RUNTIME_VERSION=21.0.1+12-LTS-29, VM_NAME=Java HotSpot(TM) 64-Bit Server VM, VM_VERSION=21.0.1+12-LTS-29, VM_VENDOR=Oracle Corporation, OS_ARCH=aarch64}
+Found daemon DaemonInfo{pid=19576, address=[3022a426-3cf9-4164-afa0-4e3eae412fbb port:54632, addresses:[/127.0.0.1]], state=Idle, lastBusy=1772591853394, context=DefaultDaemonContext[uid=b34e2b18-e87a-4c4d-87a7-b3831636889a,javaHome=/Applications/Android Studio.app/Contents/jbr/Contents/Home,daemonRegistryDir=/Users/daybinpp/.gradle/daemon,pid=19576,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,daemonOpts=--add-opens=java.base/java.util=ALL-UNNAMED,--add-opens=java.base/java.lang=ALL-UNNAMED,--add-opens=java.base/java.lang.invoke=ALL-UNNAMED,--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED,--add-opens=java.base/java.nio.charset=ALL-UNNAMED,--add-opens=java.base/java.net=ALL-UNNAMED,--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED,-Xmx4G,-Dfile.encoding=UTF-8,-Duser.country=US,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+Java home is different.
+Wanted: DefaultDaemonContext[uid=null,javaHome=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home,daemonRegistryDir=/Users/daybinpp/.gradle/daemon,pid=20879,idleTimeout=null,priority=NORMAL,applyInstrumentationAgent=true,daemonOpts=--add-opens=java.base/java.util=ALL-UNNAMED,--add-opens=java.base/java.lang=ALL-UNNAMED,--add-opens=java.base/java.lang.invoke=ALL-UNNAMED,--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED,--add-opens=java.base/java.nio.charset=ALL-UNNAMED,--add-opens=java.base/java.net=ALL-UNNAMED,--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED,-Xmx4G,-Dfile.encoding=UTF-8,-Duser.country=US,-Duser.language=en,-Duser.variant]
+Actual: DefaultDaemonContext[uid=b34e2b18-e87a-4c4d-87a7-b3831636889a,javaHome=/Applications/Android Studio.app/Contents/jbr/Contents/Home,daemonRegistryDir=/Users/daybinpp/.gradle/daemon,pid=19576,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,daemonOpts=--add-opens=java.base/java.util=ALL-UNNAMED,--add-opens=java.base/java.lang=ALL-UNNAMED,--add-opens=java.base/java.lang.invoke=ALL-UNNAMED,--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED,--add-opens=java.base/java.nio.charset=ALL-UNNAMED,--add-opens=java.base/java.net=ALL-UNNAMED,--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED,-Xmx4G,-Dfile.encoding=UTF-8,-Duser.country=US,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 20549). The daemon log file: /Users/daybinpp/.gradle/daemon/8.5/daemon-20549.out.log
+Starting 2nd build in daemon [uptime: 35.618 secs, performance: 99%, GC rate: 0.00/s, heap usage: 0% of 4 GiB]
+Using 10 worker leases.
+Now considering [/Users/daybinpp/Development/mortgageloan/android, /Users/daybinpp/flutter/packages/flutter_tools/gradle] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Now considering [/Users/daybinpp/flutter/packages/flutter_tools/gradle, /Users/daybinpp/Development/mortgageloan/android] as hierarchies to watch
+
+> Configure project :gradle
+Evaluating project ':gradle' using build file '/Users/daybinpp/flutter/packages/flutter_tools/gradle/build.gradle.kts'.
+Using Kotlin Gradle Plugin gradle81 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+file or directory '/Users/daybinpp/flutter/packages/flutter_tools/gradle/src/main/java', not found
+Caching disabled for Kotlin DSL accessors for project ':gradle' because:
+  Build cache is disabled
+Skipping Kotlin DSL accessors for project ':gradle' as it is up-to-date.
+Resolve mutations for :gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#237,Execution worker,5,main]) started.
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors
+Caching disabled for task ':gradle:checkKotlinGradlePluginConfigurationErrors' because:
+  Build cache is disabled
+Task ':gradle:checkKotlinGradlePluginConfigurationErrors' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :gradle:compileKotlin (Thread[#237,Execution worker,5,main]) started.
+:gradle:compileKotlin (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:compileKotlin UP-TO-DATE
+Transforming gradle-api-8.5.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-ant-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-astbuilder-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-console-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-datetime-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-dateutil-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-groovydoc-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-json-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-nio-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-sql-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-templates-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-test-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming groovy-xml-3.0.17.jar with ClasspathEntrySnapshotTransform
+Transforming javaparser-core-3.17.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-stdlib-1.9.20.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-reflect-1.9.20.jar with ClasspathEntrySnapshotTransform
+Transforming gradle-installation-beacon-8.5.jar with ClasspathEntrySnapshotTransform
+Transforming gradle-kotlin-dsl-extensions-8.5.jar with ClasspathEntrySnapshotTransform
+Transforming gradle-kotlin-dsl-8.5.jar with ClasspathEntrySnapshotTransform
+Transforming gradle-kotlin-dsl-shared-runtime-8.5.jar with ClasspathEntrySnapshotTransform
+Transforming gradle-kotlin-dsl-tooling-models-8.5.jar with ClasspathEntrySnapshotTransform
+Transforming annotation-jvm-1.9.1.jar with ClasspathEntrySnapshotTransform
+Transforming gradle-8.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-reflect-1.9.20.jar with ClasspathEntrySnapshotTransform
+Transforming kotlinx-serialization-json-jvm-1.4.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlinx-serialization-core-jvm-1.4.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-stdlib-jdk8-1.8.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-stdlib-jdk7-1.8.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-stdlib-1.9.24.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-gradle-plugin-1.8.0-gradle76.jar with ClasspathEntrySnapshotTransform
+Transforming builder-8.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming builder-model-8.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming gradle-api-8.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-gradle-plugin-model-1.8.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-gradle-plugin-api-1.8.0-gradle76.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-gradle-plugin-api-1.8.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-tooling-core-1.8.0.jar with ClasspathEntrySnapshotTransform
+Transforming annotations-13.0.jar with ClasspathEntrySnapshotTransform
+Transforming manifest-merger-31.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming zipflinger-8.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming apksig-8.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming apkzlib-8.7.3.jar with ClasspathEntrySnapshotTransform
+Transforming javawriter-2.5.0.jar with ClasspathEntrySnapshotTransform
+Transforming asm-9.6.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-native-utils-1.8.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-project-model-1.8.0.jar with ClasspathEntrySnapshotTransform
+Transforming kotlin-util-io-1.8.0.jar with ClasspathEntrySnapshotTransform
+Caching disabled for task ':gradle:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':gradle:compileKotlin' as it is up-to-date.
+Resolve mutations for :gradle:compileJava (Thread[#237,Execution worker,5,main]) started.
+:gradle:compileJava (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:compileJava NO-SOURCE
+Skipping task ':gradle:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :gradle:compileGroovy (Thread[#237,Execution worker,5,main]) started.
+:gradle:compileGroovy (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:compileGroovy NO-SOURCE
+Skipping task ':gradle:compileGroovy' as it has no source files and no previous output files.
+Resolve mutations for :gradle:pluginDescriptors (Thread[#237,Execution worker,5,main]) started.
+:gradle:pluginDescriptors (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':gradle:pluginDescriptors' because:
+  Build cache is disabled
+Skipping task ':gradle:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :gradle:processResources (Thread[#237,Execution worker,5,main]) started.
+:gradle:processResources (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:processResources UP-TO-DATE
+Caching disabled for task ':gradle:processResources' because:
+  Build cache is disabled
+Skipping task ':gradle:processResources' as it is up-to-date.
+Resolve mutations for :gradle:classes (Thread[#237,Execution worker,5,main]) started.
+:gradle:classes (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:classes UP-TO-DATE
+Skipping task ':gradle:classes' as it has no actions.
+Resolve mutations for :gradle:jar (Thread[#237,Execution worker,5,main]) started.
+:gradle:jar (Thread[#237,Execution worker,5,main]) started.
+
+> Task :gradle:jar UP-TO-DATE
+Caching disabled for task ':gradle:jar' because:
+  Build cache is disabled
+Skipping task ':gradle:jar' as it is up-to-date.
+Settings evaluated using settings file '/Users/daybinpp/Development/mortgageloan/android/settings.gradle'.
+Projects loaded. Root project using build file '/Users/daybinpp/Development/mortgageloan/android/build.gradle'.
+Included projects: [root project 'android', project ':app', project ':firebase_analytics', project ':firebase_core', project ':firebase_crashlytics', project ':google_mobile_ads', project ':package_info_plus', project ':path_provider_android', project ':shared_preferences_android', project ':url_launcher_android', project ':webview_flutter_android']
+
+> Configure project :app
+Evaluating project ':app' using build file '/Users/daybinpp/Development/mortgageloan/android/app/build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle76 variant
+WARNING: DSL element 'dexOptions' is obsolete and should be removed.
+It will be removed in version 8.0 of the Android Gradle plugin.
+Using it has no effect, and the AndroidGradle plugin optimizes dexing automatically.
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [26.3.11579264]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/daybinpp/Library/Android/sdk
+Parsed shrinker version: 8.3.36
+
+> Configure project :
+Evaluating root project 'android' using build file '/Users/daybinpp/Development/mortgageloan/android/build.gradle'.
+
+> Configure project :firebase_analytics
+Evaluating project ':firebase_analytics' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle76 variant
+
+> Configure project :firebase_core
+Evaluating project ':firebase_core' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_core-4.4.0/android/build.gradle'.
+Using default execution profile
+
+> Configure project :firebase_crashlytics
+Evaluating project ':firebase_crashlytics' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_crashlytics-5.0.7/android/build.gradle'.
+Using default execution profile
+
+> Configure project :google_mobile_ads
+Evaluating project ':google_mobile_ads' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/google_mobile_ads-6.0.0/android/build.gradle'.
+Using default execution profile
+
+> Configure project :package_info_plus
+Evaluating project ':package_info_plus' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/package_info_plus-9.0.0/android/build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle76 variant
+
+> Configure project :path_provider_android
+Evaluating project ':path_provider_android' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/path_provider_android-2.2.19/android/build.gradle'.
+Using default execution profile
+
+> Configure project :shared_preferences_android
+Evaluating project ':shared_preferences_android' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.13/android/build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle76 variant
+
+> Configure project :url_launcher_android
+Evaluating project ':url_launcher_android' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.20/android/build.gradle'.
+Using default execution profile
+
+> Configure project :webview_flutter_android
+Evaluating project ':webview_flutter_android' using build file '/Users/daybinpp/.pub-cache/hosted/pub.dev/webview_flutter_android-4.10.1/android/build.gradle'.
+Using default execution profile
+Using Kotlin Gradle Plugin gradle76 variant
+All projects evaluated.
+Task path ':firebase_analytics:compileDebugKotlin' matched project ':firebase_analytics'
+Task name matched 'compileDebugKotlin'
+Selected primary task 'compileDebugKotlin' from project :firebase_analytics
+Tasks to be executed: [task ':firebase_analytics:preBuild', task ':firebase_analytics:preDebugBuild', task ':firebase_analytics:generateDebugBuildConfig', task ':firebase_analytics:generateDebugResValues', task ':firebase_analytics:generateDebugResources', task ':firebase_analytics:packageDebugResources', task ':firebase_analytics:parseDebugLocalResources', task ':firebase_analytics:generateDebugRFile', task ':firebase_core:preBuild', task ':firebase_core:preDebugBuild', task ':firebase_core:generateDebugBuildConfig', task ':firebase_core:generateDebugResValues', task ':firebase_core:generateDebugResources', task ':firebase_core:packageDebugResources', task ':firebase_core:parseDebugLocalResources', task ':firebase_core:generateDebugRFile', task ':firebase_core:javaPreCompileDebug', task ':firebase_core:compileDebugJavaWithJavac', task ':firebase_core:bundleLibCompileToJarDebug', task ':firebase_analytics:compileDebugKotlin']
+Tasks that were excluded: []
+Resolve mutations for :firebase_analytics:preBuild (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:preBuild (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:preBuild UP-TO-DATE
+Skipping task ':firebase_analytics:preBuild' as it has no actions.
+Resolve mutations for :firebase_analytics:preDebugBuild (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:preDebugBuild (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:preDebugBuild UP-TO-DATE
+Skipping task ':firebase_analytics:preDebugBuild' as it has no actions.
+Resolve mutations for :firebase_analytics:generateDebugBuildConfig (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:generateDebugBuildConfig (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:generateDebugBuildConfig UP-TO-DATE
+Caching disabled for task ':firebase_analytics:generateDebugBuildConfig' because:
+  Build cache is disabled
+Skipping task ':firebase_analytics:generateDebugBuildConfig' as it is up-to-date.
+Resolve mutations for :firebase_analytics:generateDebugResValues (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:generateDebugResValues (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:generateDebugResValues UP-TO-DATE
+Caching disabled for task ':firebase_analytics:generateDebugResValues' because:
+  Build cache is disabled
+Skipping task ':firebase_analytics:generateDebugResValues' as it is up-to-date.
+Resolve mutations for :firebase_analytics:generateDebugResources (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:generateDebugResources (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:generateDebugResources UP-TO-DATE
+Caching disabled for task ':firebase_analytics:generateDebugResources' because:
+  Build cache is disabled
+Skipping task ':firebase_analytics:generateDebugResources' as it is up-to-date.
+Resolve mutations for :firebase_analytics:packageDebugResources (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:packageDebugResources (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:packageDebugResources UP-TO-DATE
+Caching disabled for task ':firebase_analytics:packageDebugResources' because:
+  Build cache is disabled
+Skipping task ':firebase_analytics:packageDebugResources' as it is up-to-date.
+Resolve mutations for :firebase_analytics:parseDebugLocalResources (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:parseDebugLocalResources (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:parseDebugLocalResources UP-TO-DATE
+Transforming android.jar with PlatformAttrTransform
+Transforming android.jar with PlatformAttrTransform
+Caching disabled for task ':firebase_analytics:parseDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':firebase_analytics:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :firebase_analytics:generateDebugRFile (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_analytics:generateDebugRFile (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_analytics:generateDebugRFile UP-TO-DATE
+Transforming android.jar with PlatformAttrTransform
+Caching disabled for task ':firebase_analytics:generateDebugRFile' because:
+  Build cache is disabled
+Skipping task ':firebase_analytics:generateDebugRFile' as it is up-to-date.
+Resolve mutations for :firebase_core:preBuild (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_core:preBuild (Thread[#242,Execution worker Thread 6,5,main]) started.
+
+> Task :firebase_core:preBuild UP-TO-DATE
+Skipping task ':firebase_core:preBuild' as it has no actions.
+Resolve mutations for :firebase_core:preDebugBuild (Thread[#242,Execution worker Thread 6,5,main]) started.
+:firebase_core:preDebugBuild (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:preDebugBuild UP-TO-DATE
+Skipping task ':firebase_core:preDebugBuild' as it has no actions.
+Resolve mutations for :firebase_core:generateDebugBuildConfig (Thread[#236,included builds,5,main]) started.
+:firebase_core:generateDebugBuildConfig (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:generateDebugBuildConfig UP-TO-DATE
+Caching disabled for task ':firebase_core:generateDebugBuildConfig' because:
+  Build cache is disabled
+Skipping task ':firebase_core:generateDebugBuildConfig' as it is up-to-date.
+Resolve mutations for :firebase_core:generateDebugResValues (Thread[#236,included builds,5,main]) started.
+:firebase_core:generateDebugResValues (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:generateDebugResValues UP-TO-DATE
+Caching disabled for task ':firebase_core:generateDebugResValues' because:
+  Build cache is disabled
+Skipping task ':firebase_core:generateDebugResValues' as it is up-to-date.
+Resolve mutations for :firebase_core:generateDebugResources (Thread[#236,included builds,5,main]) started.
+:firebase_core:generateDebugResources (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:generateDebugResources UP-TO-DATE
+Caching disabled for task ':firebase_core:generateDebugResources' because:
+  Build cache is disabled
+Skipping task ':firebase_core:generateDebugResources' as it is up-to-date.
+Resolve mutations for :firebase_core:packageDebugResources (Thread[#236,included builds,5,main]) started.
+:firebase_core:packageDebugResources (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:packageDebugResources UP-TO-DATE
+Caching disabled for task ':firebase_core:packageDebugResources' because:
+  Build cache is disabled
+Skipping task ':firebase_core:packageDebugResources' as it is up-to-date.
+Resolve mutations for :firebase_core:parseDebugLocalResources (Thread[#236,included builds,5,main]) started.
+:firebase_core:parseDebugLocalResources (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:parseDebugLocalResources UP-TO-DATE
+Transforming android.jar with PlatformAttrTransform
+Transforming android.jar with PlatformAttrTransform
+Caching disabled for task ':firebase_core:parseDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':firebase_core:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :firebase_core:generateDebugRFile (Thread[#236,included builds,5,main]) started.
+:firebase_core:generateDebugRFile (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:generateDebugRFile UP-TO-DATE
+Transforming android.jar with PlatformAttrTransform
+Caching disabled for task ':firebase_core:generateDebugRFile' because:
+  Build cache is disabled
+Skipping task ':firebase_core:generateDebugRFile' as it is up-to-date.
+Resolve mutations for :firebase_core:javaPreCompileDebug (Thread[#236,included builds,5,main]) started.
+:firebase_core:javaPreCompileDebug (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:javaPreCompileDebug UP-TO-DATE
+Caching disabled for task ':firebase_core:javaPreCompileDebug' because:
+  Build cache is disabled
+Skipping task ':firebase_core:javaPreCompileDebug' as it is up-to-date.
+Resolve mutations for :firebase_core:compileDebugJavaWithJavac (Thread[#236,included builds,5,main]) started.
+:firebase_core:compileDebugJavaWithJavac (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:compileDebugJavaWithJavac UP-TO-DATE
+Transforming flutter_embedding_debug-1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767.jar (io.flutter:flutter_embedding_debug:1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767) with JetifyTransform
+Transforming flutter_embedding_debug-1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767.jar (io.flutter:flutter_embedding_debug:1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767) with IdentityTransform
+Transforming firebase-common-22.0.1.aar (com.google.firebase:firebase-common:22.0.1) with JetifyTransform
+Transforming firebase-common-22.0.1.aar (com.google.firebase:firebase-common:22.0.1) with AarToClassTransform
+Transforming kotlinx-coroutines-core-jvm-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0) with JetifyTransform
+Transforming activity-1.8.1.aar (androidx.activity:activity:1.8.1) with JetifyTransform
+Transforming lifecycle-livedata-2.7.0.aar (androidx.lifecycle:lifecycle-livedata:2.7.0) with JetifyTransform
+Transforming lifecycle-livedata-core-ktx-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0) with JetifyTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with JetifyTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with JetifyTransform
+Transforming lifecycle-livedata-core-ktx-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0) with AarToClassTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with AarToClassTransform
+Transforming lifecycle-livedata-2.7.0.aar (androidx.lifecycle:lifecycle-livedata:2.7.0) with AarToClassTransform
+Transforming kotlinx-coroutines-core-jvm-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0) with IdentityTransform
+Transforming kotlinx-coroutines-android-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0) with JetifyTransform
+Transforming activity-1.8.1.aar (androidx.activity:activity:1.8.1) with AarToClassTransform
+Transforming window-1.2.0.aar (androidx.window:window:1.2.0) with JetifyTransform
+Transforming loader-1.0.0.aar (androidx.loader:loader:1.0.0) with JetifyTransform
+Transforming kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0) with JetifyTransform
+Transforming kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0) with IdentityTransform
+Transforming loader-1.0.0.aar (androidx.loader:loader:1.0.0) with AarToClassTransform
+Transforming kotlinx-coroutines-android-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0) with IdentityTransform
+Transforming window-java-1.2.0.aar (androidx.window:window-java:1.2.0) with JetifyTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with JetifyTransform
+Transforming annotations-23.0.0.jar (org.jetbrains:annotations:23.0.0) with JetifyTransform
+Transforming lifecycle-viewmodel-savedstate-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0) with JetifyTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with AarToClassTransform
+Transforming lifecycle-viewmodel-savedstate-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0) with AarToClassTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with JetifyTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with AarToClassTransform
+Transforming annotations-23.0.0.jar (org.jetbrains:annotations:23.0.0) with IdentityTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with AarToClassTransform
+Transforming play-services-basement-18.3.0.aar (com.google.android.gms:play-services-basement:18.3.0) with JetifyTransform
+Transforming play-services-tasks-18.1.0.aar (com.google.android.gms:play-services-tasks:18.1.0) with JetifyTransform
+Transforming window-1.2.0.aar (androidx.window:window:1.2.0) with AarToClassTransform
+Transforming lifecycle-livedata-core-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core:2.7.0) with JetifyTransform
+Transforming play-services-tasks-18.1.0.aar (com.google.android.gms:play-services-tasks:18.1.0) with AarToClassTransform
+Transforming play-services-basement-18.3.0.aar (com.google.android.gms:play-services-basement:18.3.0) with AarToClassTransform
+Transforming core-ktx-1.13.1.aar (androidx.core:core-ktx:1.13.1) with JetifyTransform
+Transforming lifecycle-livedata-core-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core:2.7.0) with AarToClassTransform
+Transforming window-java-1.2.0.aar (androidx.window:window-java:1.2.0) with AarToClassTransform
+Transforming core-ktx-1.13.1.aar (androidx.core:core-ktx:1.13.1) with AarToClassTransform
+Transforming lifecycle-runtime-2.7.0.aar (androidx.lifecycle:lifecycle-runtime:2.7.0) with JetifyTransform
+Transforming lifecycle-process-2.7.0.aar (androidx.lifecycle:lifecycle-process:2.7.0) with JetifyTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with JetifyTransform
+Transforming viewpager-1.0.0.aar (androidx.viewpager:viewpager:1.0.0) with JetifyTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with JetifyTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with JetifyTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with AarToClassTransform
+Transforming customview-1.0.0.aar (androidx.customview:customview:1.0.0) with JetifyTransform
+Transforming lifecycle-common-2.7.0.jar (androidx.lifecycle:lifecycle-common:2.7.0) with JetifyTransform
+Transforming customview-1.0.0.aar (androidx.customview:customview:1.0.0) with AarToClassTransform
+Transforming lifecycle-runtime-2.7.0.aar (androidx.lifecycle:lifecycle-runtime:2.7.0) with AarToClassTransform
+Transforming lifecycle-common-2.7.0.jar (androidx.lifecycle:lifecycle-common:2.7.0) with IdentityTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with AarToClassTransform
+Transforming lifecycle-common-java8-2.7.0.jar (androidx.lifecycle:lifecycle-common-java8:2.7.0) with JetifyTransform
+Transforming lifecycle-common-java8-2.7.0.jar (androidx.lifecycle:lifecycle-common-java8:2.7.0) with IdentityTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with AarToClassTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with JetifyTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with JetifyTransform
+Transforming lifecycle-process-2.7.0.aar (androidx.lifecycle:lifecycle-process:2.7.0) with AarToClassTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with AarToClassTransform
+Transforming viewpager-1.0.0.aar (androidx.viewpager:viewpager:1.0.0) with AarToClassTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with AarToClassTransform
+Transforming versionedparcelable-1.1.1.aar (androidx.versionedparcelable:versionedparcelable:1.1.1) with JetifyTransform
+Transforming core-runtime-2.2.0.aar (androidx.arch.core:core-runtime:2.2.0) with JetifyTransform
+Transforming core-common-2.2.0.jar (androidx.arch.core:core-common:2.2.0) with JetifyTransform
+Transforming versionedparcelable-1.1.1.aar (androidx.versionedparcelable:versionedparcelable:1.1.1) with AarToClassTransform
+Transforming core-runtime-2.2.0.aar (androidx.arch.core:core-runtime:2.2.0) with AarToClassTransform
+Transforming core-common-2.2.0.jar (androidx.arch.core:core-common:2.2.0) with IdentityTransform
+Transforming savedstate-1.2.1.aar (androidx.savedstate:savedstate:1.2.1) with JetifyTransform
+Transforming firebase-annotations-17.0.0.jar (com.google.firebase:firebase-annotations:17.0.0) with JetifyTransform
+Transforming firebase-annotations-17.0.0.jar (com.google.firebase:firebase-annotations:17.0.0) with IdentityTransform
+Transforming savedstate-1.2.1.aar (androidx.savedstate:savedstate:1.2.1) with AarToClassTransform
+Transforming annotation-experimental-1.4.0.aar (androidx.annotation:annotation-experimental:1.4.0) with JetifyTransform
+Transforming annotation-jvm-1.8.0.jar (androidx.annotation:annotation-jvm:1.8.0) with JetifyTransform
+Transforming collection-1.1.0.jar (androidx.collection:collection:1.1.0) with JetifyTransform
+Transforming annotation-jvm-1.8.0.jar (androidx.annotation:annotation-jvm:1.8.0) with IdentityTransform
+Transforming startup-runtime-1.1.1.aar (androidx.startup:startup-runtime:1.1.1) with JetifyTransform
+Transforming annotation-experimental-1.4.0.aar (androidx.annotation:annotation-experimental:1.4.0) with AarToClassTransform
+Transforming firebase-components-19.0.0.aar (com.google.firebase:firebase-components:19.0.0) with JetifyTransform
+Transforming firebase-components-19.0.0.aar (com.google.firebase:firebase-components:19.0.0) with AarToClassTransform
+Transforming tracing-1.2.0.aar (androidx.tracing:tracing:1.2.0) with JetifyTransform
+Transforming kotlin-stdlib-2.0.21.jar (org.jetbrains.kotlin:kotlin-stdlib:2.0.21) with JetifyTransform
+Transforming tracing-1.2.0.aar (androidx.tracing:tracing:1.2.0) with AarToClassTransform
+Transforming relinker-1.4.5.aar (com.getkeepsafe.relinker:relinker:1.4.5) with JetifyTransform
+Transforming startup-runtime-1.1.1.aar (androidx.startup:startup-runtime:1.1.1) with AarToClassTransform
+Transforming collection-1.1.0.jar (androidx.collection:collection:1.1.0) with IdentityTransform
+Transforming relinker-1.4.5.aar (com.getkeepsafe.relinker:relinker:1.4.5) with AarToClassTransform
+Transforming kotlin-stdlib-2.0.21.jar (org.jetbrains.kotlin:kotlin-stdlib:2.0.21) with IdentityTransform
+Transforming core-for-system-modules.jar with JdkImageTransform
+Transforming core-for-system-modules.jar with JdkImageTransform
+Transforming core-for-system-modules.jar with JdkImageTransform
+Transforming core-for-system-modules.jar with JdkImageTransform
+Transforming core-for-system-modules.jar with JdkImageTransform
+Transforming core-for-system-modules.jar with JdkImageTransform
+Caching disabled for task ':firebase_core:compileDebugJavaWithJavac' because:
+  Build cache is disabled
+Skipping task ':firebase_core:compileDebugJavaWithJavac' as it is up-to-date.
+No compile result for :firebase_core:compileDebugJavaWithJavac
+Resolve mutations for :firebase_core:bundleLibCompileToJarDebug (Thread[#236,included builds,5,main]) started.
+:firebase_core:bundleLibCompileToJarDebug (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_core:bundleLibCompileToJarDebug UP-TO-DATE
+Caching disabled for task ':firebase_core:bundleLibCompileToJarDebug' because:
+  Build cache is disabled
+Skipping task ':firebase_core:bundleLibCompileToJarDebug' as it is up-to-date.
+work action resolve classes.jar (project :firebase_core) (Thread[#236,included builds,5,main]) started.
+Resolve mutations for :firebase_analytics:compileDebugKotlin (Thread[#236,included builds,5,main]) started.
+:firebase_analytics:compileDebugKotlin (Thread[#236,included builds,5,main]) started.
+
+> Task :firebase_analytics:compileDebugKotlin FAILED
+Transforming kotlin-stdlib-jdk7-1.8.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0) with JetifyTransform
+Transforming kotlin-stdlib-jdk7-1.8.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0) with IdentityTransform
+Transforming flutter_embedding_debug-1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767.jar (io.flutter:flutter_embedding_debug:1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767) with JetifyTransform
+Transforming flutter_embedding_debug-1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767.jar (io.flutter:flutter_embedding_debug:1.0.0-ef0cd000916d64fa0c5d09cc809fa7ad244a5767) with IdentityTransform
+Transforming firebase-common-22.0.1.aar (com.google.firebase:firebase-common:22.0.1) with JetifyTransform
+Transforming firebase-common-22.0.1.aar (com.google.firebase:firebase-common:22.0.1) with AarToClassTransform
+Transforming activity-1.8.1.aar (androidx.activity:activity:1.8.1) with JetifyTransform
+Transforming activity-1.8.1.aar (androidx.activity:activity:1.8.1) with AarToClassTransform
+Transforming loader-1.0.0.aar (androidx.loader:loader:1.0.0) with JetifyTransform
+Transforming firebase-analytics-23.0.0.aar (com.google.firebase:firebase-analytics:23.0.0) with JetifyTransform
+Transforming loader-1.0.0.aar (androidx.loader:loader:1.0.0) with AarToClassTransform
+Transforming play-services-measurement-sdk-23.0.0.aar (com.google.android.gms:play-services-measurement-sdk:23.0.0) with JetifyTransform
+Transforming loader-1.0.0.aar (androidx.loader:loader:1.0.0) with JetifyTransform
+Transforming play-services-ads-identifier-18.0.0.aar (com.google.android.gms:play-services-ads-identifier:18.0.0) with JetifyTransform
+Transforming play-services-measurement-sdk-23.0.0.aar (com.google.android.gms:play-services-measurement-sdk:23.0.0) with AarToClassTransform
+Transforming play-services-ads-identifier-18.0.0.aar (com.google.android.gms:play-services-ads-identifier:18.0.0) with AarToClassTransform
+Transforming play-services-measurement-impl-23.0.0.aar (com.google.android.gms:play-services-measurement-impl:23.0.0) with JetifyTransform
+Transforming play-services-measurement-impl-23.0.0.aar (com.google.android.gms:play-services-measurement-impl:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-impl-23.0.0.aar (com.google.android.gms:play-services-measurement-impl:23.0.0) with JetifyTransform
+Transforming play-services-measurement-impl-23.0.0.aar (com.google.android.gms:play-services-measurement-impl:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with JetifyTransform
+Transforming firebase-analytics-23.0.0.aar (com.google.firebase:firebase-analytics:23.0.0) with AarToClassTransform
+Transforming play-services-ads-identifier-18.0.0.aar (com.google.android.gms:play-services-ads-identifier:18.0.0) with JetifyTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with JetifyTransform
+Transforming play-services-measurement-sdk-api-23.0.0.aar (com.google.android.gms:play-services-measurement-sdk-api:23.0.0) with JetifyTransform
+Transforming play-services-measurement-sdk-api-23.0.0.aar (com.google.android.gms:play-services-measurement-sdk-api:23.0.0) with JetifyTransform
+Transforming play-services-measurement-sdk-api-23.0.0.aar (com.google.android.gms:play-services-measurement-sdk-api:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-23.0.0.aar (com.google.android.gms:play-services-measurement:23.0.0) with JetifyTransform
+Transforming play-services-measurement-api-23.0.0.aar (com.google.android.gms:play-services-measurement-api:23.0.0) with JetifyTransform
+Transforming play-services-ads-identifier-18.0.0.aar (com.google.android.gms:play-services-ads-identifier:18.0.0) with JetifyTransform
+Transforming loader-1.0.0.aar (androidx.loader:loader:1.0.0) with AarToClassTransform
+Transforming play-services-ads-identifier-18.0.0.aar (com.google.android.gms:play-services-ads-identifier:18.0.0) with AarToClassTransform
+Transforming lifecycle-livedata-core-ktx-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0) with JetifyTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with JetifyTransform
+Transforming play-services-measurement-23.0.0.aar (com.google.android.gms:play-services-measurement:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-sdk-api-23.0.0.aar (com.google.android.gms:play-services-measurement-sdk-api:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-api-23.0.0.aar (com.google.android.gms:play-services-measurement-api:23.0.0) with AarToClassTransform
+Transforming play-services-ads-identifier-18.0.0.aar (com.google.android.gms:play-services-ads-identifier:18.0.0) with AarToClassTransform
+Transforming play-services-stats-17.0.2.aar (com.google.android.gms:play-services-stats:17.0.2) with JetifyTransform
+Transforming play-services-stats-17.0.2.aar (com.google.android.gms:play-services-stats:17.0.2) with AarToClassTransform
+Transforming firebase-installations-19.0.1.aar (com.google.firebase:firebase-installations:19.0.1) with JetifyTransform
+Transforming firebase-installations-interop-17.1.1.aar (com.google.firebase:firebase-installations-interop:17.1.1) with JetifyTransform
+Transforming firebase-installations-interop-17.1.1.aar (com.google.firebase:firebase-installations-interop:17.1.1) with JetifyTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with JetifyTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with AarToClassTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with JetifyTransform
+Transforming legacy-support-core-utils-1.0.0.aar (androidx.legacy:legacy-support-core-utils:1.0.0) with JetifyTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with AarToClassTransform
+Transforming lifecycle-livedata-core-ktx-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0) with AarToClassTransform
+Transforming legacy-support-core-utils-1.0.0.aar (androidx.legacy:legacy-support-core-utils:1.0.0) with JetifyTransform
+Transforming play-services-measurement-base-23.0.0.aar (com.google.android.gms:play-services-measurement-base:23.0.0) with AarToClassTransform
+Transforming firebase-installations-interop-17.1.1.aar (com.google.firebase:firebase-installations-interop:17.1.1) with AarToClassTransform
+Transforming firebase-installations-interop-17.1.1.aar (com.google.firebase:firebase-installations-interop:17.1.1) with AarToClassTransform
+Transforming legacy-support-core-utils-1.0.0.aar (androidx.legacy:legacy-support-core-utils:1.0.0) with AarToClassTransform
+Transforming firebase-installations-19.0.1.aar (com.google.firebase:firebase-installations:19.0.1) with AarToClassTransform
+Transforming play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) with JetifyTransform
+Transforming play-services-stats-17.0.2.aar (com.google.android.gms:play-services-stats:17.0.2) with JetifyTransform
+Transforming legacy-support-core-utils-1.0.0.aar (androidx.legacy:legacy-support-core-utils:1.0.0) with AarToClassTransform
+Transforming lifecycle-livedata-2.7.0.aar (androidx.lifecycle:lifecycle-livedata:2.7.0) with JetifyTransform
+Transforming play-services-stats-17.0.2.aar (com.google.android.gms:play-services-stats:17.0.2) with AarToClassTransform
+Transforming lifecycle-livedata-2.7.0.aar (androidx.lifecycle:lifecycle-livedata:2.7.0) with AarToClassTransform
+Transforming play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) with AarToClassTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with JetifyTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with AarToClassTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with JetifyTransform
+Transforming lifecycle-viewmodel-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel:2.7.0) with AarToClassTransform
+Transforming lifecycle-livedata-core-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core:2.7.0) with JetifyTransform
+Transforming lifecycle-livedata-core-2.7.0.aar (androidx.lifecycle:lifecycle-livedata-core:2.7.0) with AarToClassTransform
+Transforming lifecycle-viewmodel-savedstate-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0) with JetifyTransform
+Transforming lifecycle-viewmodel-savedstate-2.7.0.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0) with AarToClassTransform
+Transforming window-java-1.2.0.aar (androidx.window:window-java:1.2.0) with JetifyTransform
+Transforming window-java-1.2.0.aar (androidx.window:window-java:1.2.0) with AarToClassTransform
+Transforming window-1.2.0.aar (androidx.window:window:1.2.0) with JetifyTransform
+Transforming window-1.2.0.aar (androidx.window:window:1.2.0) with AarToClassTransform
+Transforming kotlinx-coroutines-android-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0) with JetifyTransform
+Transforming kotlinx-coroutines-android-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0) with IdentityTransform
+Transforming kotlinx-coroutines-core-jvm-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0) with JetifyTransform
+Transforming kotlinx-coroutines-core-jvm-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0) with IdentityTransform
+Transforming kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0) with JetifyTransform
+Transforming kotlinx-coroutines-play-services-1.9.0.jar (org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0) with IdentityTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with JetifyTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with AarToClassTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with JetifyTransform
+Transforming fragment-1.7.1.aar (androidx.fragment:fragment:1.7.1) with AarToClassTransform
+Transforming core-ktx-1.13.1.aar (androidx.core:core-ktx:1.13.1) with JetifyTransform
+Transforming core-ktx-1.13.1.aar (androidx.core:core-ktx:1.13.1) with AarToClassTransform
+Transforming viewpager-1.0.0.aar (androidx.viewpager:viewpager:1.0.0) with JetifyTransform
+Transforming viewpager-1.0.0.aar (androidx.viewpager:viewpager:1.0.0) with AarToClassTransform
+Transforming customview-1.0.0.aar (androidx.customview:customview:1.0.0) with JetifyTransform
+Transforming customview-1.0.0.aar (androidx.customview:customview:1.0.0) with AarToClassTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with JetifyTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with AarToClassTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with JetifyTransform
+Transforming core-1.13.1.aar (androidx.core:core:1.13.1) with AarToClassTransform
+Transforming lifecycle-runtime-2.7.0.aar (androidx.lifecycle:lifecycle-runtime:2.7.0) with JetifyTransform
+Transforming lifecycle-runtime-2.7.0.aar (androidx.lifecycle:lifecycle-runtime:2.7.0) with AarToClassTransform
+Transforming lifecycle-process-2.7.0.aar (androidx.lifecycle:lifecycle-process:2.7.0) with JetifyTransform
+Transforming lifecycle-process-2.7.0.aar (androidx.lifecycle:lifecycle-process:2.7.0) with AarToClassTransform
+Transforming lifecycle-common-java8-2.7.0.jar (androidx.lifecycle:lifecycle-common-java8:2.7.0) with JetifyTransform
+Transforming ads-adservices-1.1.0-beta11.aar (androidx.privacysandbox.ads:ads-adservices:1.1.0-beta11) with JetifyTransform
+Transforming ads-adservices-1.1.0-beta11.aar (androidx.privacysandbox.ads:ads-adservices:1.1.0-beta11) with AarToClassTransform
+Transforming lifecycle-common-java8-2.7.0.jar (androidx.lifecycle:lifecycle-common-java8:2.7.0) with IdentityTransform
+Transforming firebase-measurement-connector-19.0.0.aar (com.google.firebase:firebase-measurement-connector:19.0.0) with JetifyTransform
+Transforming lifecycle-common-2.7.0.jar (androidx.lifecycle:lifecycle-common:2.7.0) with JetifyTransform
+Transforming firebase-measurement-connector-19.0.0.aar (com.google.firebase:firebase-measurement-connector:19.0.0) with AarToClassTransform
+Transforming ads-adservices-java-1.1.0-beta11.aar (androidx.privacysandbox.ads:ads-adservices-java:1.1.0-beta11) with JetifyTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with JetifyTransform
+Transforming lifecycle-common-2.7.0.jar (androidx.lifecycle:lifecycle-common:2.7.0) with IdentityTransform
+Transforming core-runtime-2.2.0.aar (androidx.arch.core:core-runtime:2.2.0) with JetifyTransform
+Transforming core-runtime-2.2.0.aar (androidx.arch.core:core-runtime:2.2.0) with AarToClassTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with JetifyTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with AarToClassTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with AarToClassTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with JetifyTransform
+Transforming ads-adservices-java-1.1.0-beta11.aar (androidx.privacysandbox.ads:ads-adservices-java:1.1.0-beta11) with AarToClassTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with AarToClassTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with JetifyTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with AarToClassTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with JetifyTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with AarToClassTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with JetifyTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with AarToClassTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with JetifyTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with AarToClassTransform
+Transforming core-common-2.2.0.jar (androidx.arch.core:core-common:2.2.0) with JetifyTransform
+Transforming core-common-2.2.0.jar (androidx.arch.core:core-common:2.2.0) with IdentityTransform
+Transforming versionedparcelable-1.1.1.aar (androidx.versionedparcelable:versionedparcelable:1.1.1) with JetifyTransform
+Transforming versionedparcelable-1.1.1.aar (androidx.versionedparcelable:versionedparcelable:1.1.1) with AarToClassTransform
+Transforming collection-1.1.0.jar (androidx.collection:collection:1.1.0) with JetifyTransform
+Transforming collection-1.1.0.jar (androidx.collection:collection:1.1.0) with IdentityTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with JetifyTransform
+Transforming savedstate-1.2.1.aar (androidx.savedstate:savedstate:1.2.1) with JetifyTransform
+Transforming savedstate-1.2.1.aar (androidx.savedstate:savedstate:1.2.1) with AarToClassTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with JetifyTransform
+Transforming annotation-experimental-1.4.0.aar (androidx.annotation:annotation-experimental:1.4.0) with JetifyTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with AarToClassTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with AarToClassTransform
+Transforming print-1.0.0.aar (androidx.print:print:1.0.0) with JetifyTransform
+Transforming print-1.0.0.aar (androidx.print:print:1.0.0) with AarToClassTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with JetifyTransform
+Transforming play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) with AarToClassTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with JetifyTransform
+Transforming play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) with AarToClassTransform
+Transforming localbroadcastmanager-1.0.0.aar (androidx.localbroadcastmanager:localbroadcastmanager:1.0.0) with JetifyTransform
+Transforming documentfile-1.0.0.aar (androidx.documentfile:documentfile:1.0.0) with JetifyTransform
+Transforming documentfile-1.0.0.aar (androidx.documentfile:documentfile:1.0.0) with AarToClassTransform
+Transforming annotation-jvm-1.8.1.jar (androidx.annotation:annotation-jvm:1.8.1) with JetifyTransform
+Transforming annotation-experimental-1.4.0.aar (androidx.annotation:annotation-experimental:1.4.0) with AarToClassTransform
+Transforming annotation-jvm-1.8.1.jar (androidx.annotation:annotation-jvm:1.8.1) with IdentityTransform
+Transforming kotlin-stdlib-2.0.21.jar (org.jetbrains.kotlin:kotlin-stdlib:2.0.21) with JetifyTransform
+Transforming localbroadcastmanager-1.0.0.aar (androidx.localbroadcastmanager:localbroadcastmanager:1.0.0) with AarToClassTransform
+Transforming kotlin-stdlib-2.0.21.jar (org.jetbrains.kotlin:kotlin-stdlib:2.0.21) with IdentityTransform
+Transforming kotlin-stdlib-jdk8-1.8.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0) with JetifyTransform
+Transforming kotlin-stdlib-jdk8-1.8.0.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0) with IdentityTransform
+Transforming annotations-23.0.0.jar (org.jetbrains:annotations:23.0.0) with JetifyTransform
+Transforming annotations-23.0.0.jar (org.jetbrains:annotations:23.0.0) with IdentityTransform
+Transforming listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar (com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava) with JetifyTransform
+Transforming listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar (com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava) with IdentityTransform
+Transforming guava-31.1-android.jar (com.google.guava:guava:31.1-android) with JetifyTransform
+Transforming guava-31.1-android.jar (com.google.guava:guava:31.1-android) with IdentityTransform
+Transforming startup-runtime-1.1.1.aar (androidx.startup:startup-runtime:1.1.1) with JetifyTransform
+Transforming startup-runtime-1.1.1.aar (androidx.startup:startup-runtime:1.1.1) with AarToClassTransform
+Transforming tracing-1.2.0.aar (androidx.tracing:tracing:1.2.0) with JetifyTransform
+Transforming tracing-1.2.0.aar (androidx.tracing:tracing:1.2.0) with AarToClassTransform
+Transforming relinker-1.4.5.aar (com.getkeepsafe.relinker:relinker:1.4.5) with JetifyTransform
+Transforming relinker-1.4.5.aar (com.getkeepsafe.relinker:relinker:1.4.5) with AarToClassTransform
+Transforming failureaccess-1.0.1.jar (com.google.guava:failureaccess:1.0.1) with JetifyTransform
+Transforming failureaccess-1.0.1.jar (com.google.guava:failureaccess:1.0.1) with IdentityTransform
+Transforming jsr305-3.0.2.jar (com.google.code.findbugs:jsr305:3.0.2) with JetifyTransform
+Transforming jsr305-3.0.2.jar (com.google.code.findbugs:jsr305:3.0.2) with IdentityTransform
+Transforming checker-qual-3.12.0.jar (org.checkerframework:checker-qual:3.12.0) with JetifyTransform
+Transforming checker-qual-3.12.0.jar (org.checkerframework:checker-qual:3.12.0) with IdentityTransform
+Transforming j2objc-annotations-1.3.jar (com.google.j2objc:j2objc-annotations:1.3) with JetifyTransform
+Transforming j2objc-annotations-1.3.jar (com.google.j2objc:j2objc-annotations:1.3) with IdentityTransform
+Transforming firebase-components-19.0.0.aar (com.google.firebase:firebase-components:19.0.0) with JetifyTransform
+Transforming firebase-components-19.0.0.aar (com.google.firebase:firebase-components:19.0.0) with AarToClassTransform
+Transforming firebase-annotations-17.0.0.jar (com.google.firebase:firebase-annotations:17.0.0) with JetifyTransform
+Transforming firebase-annotations-17.0.0.jar (com.google.firebase:firebase-annotations:17.0.0) with IdentityTransform
+Transforming error_prone_annotations-2.26.0.jar (com.google.errorprone:error_prone_annotations:2.26.0) with JetifyTransform
+Transforming error_prone_annotations-2.26.0.jar (com.google.errorprone:error_prone_annotations:2.26.0) with IdentityTransform
+Caching disabled for task ':firebase_analytics:compileDebugKotlin' because:
+  Build cache is disabled
+Task ':firebase_analytics:compileDebugKotlin' is not up-to-date because:
+  Task has failed previously.
+The input changes require a full rebuild for incremental task ':firebase_analytics:compileDebugKotlin'.
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+Using Kotlin/JVM incremental compilation
+Kotlin source files: /Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/kotlin/io/flutter/plugins/firebase/analytics/FlutterFirebaseAnalyticsPlugin.kt, /Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/kotlin/io/flutter/plugins/firebase/analytics/FlutterFirebaseAppRegistrar.kt, /Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/kotlin/io/flutter/plugins/firebase/analytics/GeneratedAndroidFirebaseAnalytics.g.kt, /Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/kotlin/io/flutter/plugins/firebase/analytics/Constants.kt
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+Java source files: /Users/daybinpp/Development/mortgageloan/build/firebase_analytics/generated/source/buildConfig/debug/io/flutter/plugins/firebase/analytics/BuildConfig.java
+Script source files: 
+Script file extensions: 
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/kotlin', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/main/java', not found
+file or directory '/Users/daybinpp/.pub-cache/hosted/pub.dev/firebase_analytics-12.1.2/android/src/debug/java', not found
+[KOTLIN] Kotlin compilation 'jdkHome' argument: null
+Could not execute [report metric JVM_COMPILER_IR_MODE]
+i: found daemon on port 17769 (242890 ms old), trying to connect
+i: connected to the daemon
+Options for KOTLIN DAEMON: IncrementalCompilationOptions(super=CompilationOptions(compilerMode=INCREMENTAL_COMPILER, targetPlatform=JVM, reportCategories=[0, 3], reportSeverity=2, requestedCompilationResults=[0]kotlinScriptExtensions=[]), areFileChangesKnown=false, modifiedFiles=null, deletedFiles=null, classpathChanges=ClasspathSnapshotDisabled, workingDir=/Users/daybinpp/Development/mortgageloan/build/firebase_analytics/kotlin/compileDebugKotlin/cacheable, multiModuleICSettings=MultiModuleICSettings(buildHistoryFile=/Users/daybinpp/Development/mortgageloan/build/firebase_analytics/kotlin/compileDebugKotlin/local-state/build-history.bin, useModuleDetection=true), usePreciseJavaTracking=trueoutputFiles=[/Users/daybinpp/Development/mortgageloan/build/firebase_analytics/tmp/kotlin-classes/debug, /Users/daybinpp/Development/mortgageloan/build/firebase_analytics/kotlin/compileDebugKotlin/cacheable, /Users/daybinpp/Development/mortgageloan/build/firebase_analytics/kotlin/compileDebugKotlin/local-state])
+21 actionable tasks: 2 executed, 19 up-to-date
+Watched directory hierarchies: [/Users/daybinpp/flutter/packages/flutter_tools/gradle, /Users/daybinpp/Development/mortgageloan/android]

@@ -8,29 +8,53 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mortgageloan/firebase_options.dart';
 import 'package:mortgageloan/src/router/routes.dart';
+import 'package:mortgageloan/src/services/analytics_service.dart';
 import 'package:upgrader/upgrader.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  unawaited(MobileAds.instance.initialize());
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("DotEnv initialization failed: $e");
+  }
 
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
+  try {
+    unawaited(MobileAds.instance.initialize());
+  } catch (e) {
+    debugPrint("MobileAds initialization failed: $e");
+  }
 
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  } catch (e) {
+    debugPrint("Firebase initialization failed: $e");
+    // Fallback: simple error logging if Firebase is not available
+    FlutterError.onError = (errorDetails) {
+      debugPrint("Flutter Error: ${errorDetails.exception}");
+    };
+  }
 
   await Upgrader.clearSavedSettings();
 
   await Hive.initFlutter();
   await Hive.openBox("loan");
+  await Hive.openBox("compound_interest");
+  await Hive.openBox("ai_analysis");
+  await Hive.openBox("ai_usage");
   runApp(const MyApp());
 }
 
@@ -54,6 +78,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Mortgage Loan',
         routes: routes(),
+        navigatorObservers: [AnalyticsService.getObserver()],
         initialRoute: "/");
   }
 }
