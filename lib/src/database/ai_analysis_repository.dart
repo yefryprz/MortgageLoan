@@ -48,10 +48,7 @@ class AiAnalysisRepository {
   }
 
   Future<bool> canPerformAiAnalysis() async {
-    final box = await _openUsageBox();
-    final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final int count = box.get(today) as int? ?? 0;
-    return count < 1;
+    return true;
   }
 
   Future<void> incrementAiAnalysisCount() async {
@@ -59,12 +56,5 @@ class AiAnalysisRepository {
     final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final int count = box.get(today) as int? ?? 0;
     await box.put(today, count + 1);
-  }
-
-  Future<int> getRemainingAiAnalyses() async {
-    final box = await _openUsageBox();
-    final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final int count = box.get(today) as int? ?? 0;
-    return (1 - count).clamp(0, 1);
   }
 }

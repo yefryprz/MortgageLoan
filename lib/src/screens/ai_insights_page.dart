@@ -28,7 +28,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   final OpenRouterService _aiService = OpenRouterService();
 
   bool _isHistory = false;
-  int _remainingAnalyses = 1;
 
   @override
   void initState() {
@@ -39,16 +38,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     }
     _adHelper = InterstitialAdHelper(adCountKey: "aiCount", adFrequency: 1);
     _adHelper.load();
-    Future.delayed(Duration.zero, () {
-      _checkUsageLimit();
-    });
-  }
-
-  Future<void> _checkUsageLimit() async {
-    final remaining = await aiRepo.getRemainingAiAnalyses();
-    setState(() {
-      _remainingAnalyses = remaining;
-    });
   }
 
   void _loadHistoryData() {
@@ -85,19 +74,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   Future<void> _handleGenerateStrategy() async {
     if (_isLoading) return;
 
-    final canPerform = await aiRepo.canPerformAiAnalysis();
-    if (!canPerform) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Only 1 AI evaluation is allowed per day.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-      return;
-    }
-
     // Always show ad after EACH analysis as requested
     AnalyticsService.logEvent('ai_analysis_requested',
         parameters: <String, Object>{
@@ -133,7 +109,6 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
             'loan_type': (_args['loanType'] as String?) ?? 'Mortgage',
             'score': result.analysis?.summary?.overallScore ?? 0,
           });
-      _checkUsageLimit();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -241,28 +216,33 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                     _analysisResult!.analysis != null)
                   _buildDynamicResults(_analysisResult!.analysis!)
                 else if (!_isHistory)
-                  Center(
+                  const Center(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      padding: EdgeInsets.symmetric(vertical: 40),
                       child: Column(
                         children: [
-                          const Text(
-                            "Tap 'Generate Strategy' to analyze your loan.",
-                            style: TextStyle(color: Color(0xFF6B7280)),
+                          Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFF3ac0b5),
+                            size: 40,
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 16),
                           Text(
-                            "Remaining evaluations today: $_remainingAnalyses/1",
-                            style: const TextStyle(
-                                color: Color(0xFF3ac0b5),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            "Only 1 AI evaluation is allowed per day.",
+                            "Tap 'Generate Strategy' to analyze your loan.",
                             style: TextStyle(
-                                color: Color(0xFF9CA3AF), fontSize: 11),
+                              color: Color(0xFF1F2937),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "Get instant AI recommendations, rate comparisons, and custom repayment plans.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),

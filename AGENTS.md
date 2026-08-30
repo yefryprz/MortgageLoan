@@ -154,7 +154,7 @@ mortgageloan/
 
 ### 7. AI Financial Insights (`AiInsightsPage` - `/ai_insights`)
 * **Path**: `lib/src/screens/ai_insights_page.dart`
-* **Features**: Takes complete loan parameters and dispatches a structured prompt to OpenRouter AI, evaluates market competitiveness, produces financial health scores, negotiation tips, and refinancing recommendations, enforces a 1-per-day rate limit via `AiAnalysisRepository`, and stores analysis history.
+* **Features**: Takes complete loan parameters and dispatches a structured prompt to OpenRouter AI, evaluates market competitiveness, produces financial health scores, negotiation tips, and refinancing recommendations, supports unlimited evaluations with interstitial ad monetization on each evaluation, and stores analysis history.
 
 ### 8. Calculation History (`HistoryPage` - `/history`)
 * **Path**: `lib/src/screens/history_page.dart`
