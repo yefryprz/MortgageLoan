@@ -1,23 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
+import 'package:mortgageloan/src/utils/loan_calculator.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 
-class AmortizationRow {
-  final int month;
-  final double payment;
-  final double principal;
-  final double interest;
-  final double balance;
-  AmortizationRow(
-      this.month, this.payment, this.principal, this.interest, this.balance);
-}
+typedef AmortizationRow = AmortizationScheduleItem;
 
 class AmortizationPage extends StatefulWidget {
-  const AmortizationPage({Key? key}) : super(key: key);
+  final Loan? loan;
+
+  const AmortizationPage({super.key, this.loan});
 
   @override
-  _AmortizationPageState createState() => _AmortizationPageState();
+  State<AmortizationPage> createState() => _AmortizationPageState();
 }
 
 class _AmortizationPageState extends State<AmortizationPage> {
@@ -51,46 +46,25 @@ class _AmortizationPageState extends State<AmortizationPage> {
     return _currencyWholeFormatter.format(value);
   }
 
-  List<AmortizationRow> _generateRows(
-      double monthlyPayment, double amount, double rate, int termMonths) {
-    List<AmortizationRow> rows = [];
-    double balance = amount;
-    double monthlyRate = rate / 100 / 12;
-
-    for (var month = 1; month <= termMonths; month++) {
-      double interest =
-          double.parse((balance * monthlyRate).toStringAsFixed(2));
-      double principal =
-          double.parse((monthlyPayment - interest).toStringAsFixed(2));
-
-      if (balance < monthlyPayment) {
-        principal = balance;
-        monthlyPayment = principal + interest;
-      }
-
-      balance = double.parse((balance - principal).toStringAsFixed(2));
-      if (balance < 0) balance = 0;
-
-      rows.add(
-          AmortizationRow(month, monthlyPayment, principal, interest, balance));
-
-      if (balance <= 0) break;
-    }
-    return rows;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final Loan args = ModalRoute.of(context)!.settings.arguments as Loan;
+    final Loan args = widget.loan ??
+        (ModalRoute.of(context)?.settings.arguments as Loan?) ??
+        Loan();
 
-    double totalInterest = args.totalInterest ?? 0;
-    double principal = args.amount ?? 0;
-    double totalPaid = principal + totalInterest;
+    final double totalInterest = args.totalInterest ?? 0;
+    final double principal = args.amount ?? 0;
+    final double totalPaid = principal + totalInterest;
 
-    int totalMonths = (args.term ?? 0) * 12;
-    int totalYears = args.term ?? 0;
-    List<AmortizationRow> allRows = _generateRows(
-        args.payment ?? 0, principal, args.rate ?? 0, totalMonths);
+    final int totalMonths = (args.term ?? 0) * 12;
+    final int totalYears = args.term ?? 0;
+    final List<AmortizationScheduleItem> allRows =
+        LoanCalculator.generateAmortizationSchedule(
+      monthlyPayment: args.payment ?? 0,
+      amount: principal,
+      rate: args.rate ?? 0,
+      termMonths: totalMonths,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8F9),
@@ -120,7 +94,7 @@ class _AmortizationPageState extends State<AmortizationPage> {
           ),
         ],
       ),
-      bottomNavigationBar: CustomAdBanner(),
+      bottomNavigationBar: const CustomAdBanner(),
     );
   }
 
@@ -284,10 +258,10 @@ class _AmortizationPageState extends State<AmortizationPage> {
   }
 
   Widget _buildSummaryBar(int termMonths, double rate) {
-    DateTime now = DateTime.now();
-    DateTime payoff =
+    final DateTime now = DateTime.now();
+    final DateTime payoff =
         DateTime(now.year + (termMonths ~/ 12), now.month + (termMonths % 12));
-    String payoffStr = DateFormat('MMM yyyy').format(payoff);
+    final String payoffStr = DateFormat('MMM yyyy').format(payoff);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
@@ -342,13 +316,13 @@ class _AmortizationPageState extends State<AmortizationPage> {
     if (totalYears == 0) totalYears = 1;
     return Column(
       children: [
-        Padding(
+        const Padding(
           padding:
-              const EdgeInsets.only(left: 24, right: 24, top: 4, bottom: 4),
+              EdgeInsets.only(left: 24, right: 24, top: 4, bottom: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "MONTHLY BREAKDOWN",
                 style: TextStyle(
                     color: Color(0xFF2C3E50),
@@ -371,10 +345,10 @@ class _AmortizationPageState extends State<AmortizationPage> {
             },
             itemCount: totalYears,
             itemBuilder: (context, pageIndex) {
-              int startRow = pageIndex * 12;
+              final int startRow = pageIndex * 12;
               int endRow = startRow + 12;
               if (endRow > allRows.length) endRow = allRows.length;
-              List<AmortizationRow> pageRows =
+              final List<AmortizationRow> pageRows =
                   allRows.sublist(startRow, endRow);
 
               return _buildPageTable(pageRows);

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mortgageloan/src/database/hive.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mortgageloan/src/database/ai_analysis_repository.dart';
+import 'package:mortgageloan/src/database/compound_interest_repository.dart';
+import 'package:mortgageloan/src/database/loan_repository.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
 import 'package:mortgageloan/src/models/compound_interest_model.dart';
+import 'package:mortgageloan/src/router/routes.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:intl/intl.dart';
@@ -9,13 +13,17 @@ import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
 import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class HistoryPage extends StatefulWidget {
+  const HistoryPage({super.key});
+
   @override
-  _HistoryPageState createState() => _HistoryPageState();
+  State<HistoryPage> createState() => _HistoryPageState();
 }
 
 class _HistoryPageState extends State<HistoryPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final loanRepo = LoanData();
+  final loanRepo = LoanRepository();
+  final compoundRepo = CompoundInterestRepository();
+  final aiRepo = AiAnalysisRepository();
   int _selectedTabIndex = 0;
 
   final NumberFormat _currencyFormat =
@@ -45,7 +53,7 @@ class _HistoryPageState extends State<HistoryPage> {
     return Scaffold(
       key: _scaffoldKey,
       drawerEnableOpenDragGesture: false,
-      drawer: const CustomDrawer(currentRoute: "history"),
+      drawer: const CustomDrawer(currentRoute: AppRoutes.history),
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -59,7 +67,7 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
         ],
       ),
-      bottomNavigationBar: CustomAdBanner(),
+      bottomNavigationBar: const CustomAdBanner(),
     );
   }
 
@@ -233,15 +241,15 @@ class _HistoryPageState extends State<HistoryPage> {
           return _buildEmptyState("No loan history yet.");
         }
 
-        List<Loan> sortedLoans = List.from(snapshot.data!);
+        final List<Loan> sortedLoans = List.from(snapshot.data!);
         sortedLoans.sort((a, b) =>
             (b.date ?? DateTime(2000)).compareTo(a.date ?? DateTime(2000)));
 
-        List<Widget> listItems = [];
+        final List<Widget> listItems = [];
         String currentLabel = "";
 
         for (var loan in sortedLoans) {
-          String label = _getDateLabel(loan.date);
+          final String label = _getDateLabel(loan.date);
           if (label != currentLabel) {
             listItems.add(Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 8, left: 24),
@@ -271,7 +279,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _buildCompoundHistory() {
     return FutureBuilder<List<CompoundInterest>>(
-      future: loanRepo.getCompoundInterestHistory(),
+      future: compoundRepo.getHistory(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Center(
@@ -282,15 +290,15 @@ class _HistoryPageState extends State<HistoryPage> {
           return _buildEmptyState("No investment history yet.");
         }
 
-        List<CompoundInterest> sortedData = List.from(snapshot.data!);
+        final List<CompoundInterest> sortedData = List.from(snapshot.data!);
         sortedData.sort((a, b) =>
             (b.date ?? DateTime(2000)).compareTo(a.date ?? DateTime(2000)));
 
-        List<Widget> listItems = [];
+        final List<Widget> listItems = [];
         String currentLabel = "";
 
         for (var data in sortedData) {
-          String label = _getDateLabel(data.date);
+          final String label = _getDateLabel(data.date);
           if (label != currentLabel) {
             listItems.add(Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 8, left: 24),
@@ -480,8 +488,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     _adHelper.handleAdDetailNavigation(() {
-                      Navigator.pushNamed(context, 'amortization',
-                          arguments: data);
+                      context.push(AppRoutes.amortization, extra: data);
                     });
                   },
                   icon: const Icon(Icons.calendar_month, size: 18),
@@ -720,12 +727,12 @@ class _HistoryPageState extends State<HistoryPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    List<Map<String, dynamic>> yearlyDetails = [];
+                    final List<Map<String, dynamic>> yearlyDetails = [];
                     double currentBalance = data.principal ?? 0;
 
                     for (int i = 1; i <= (data.years ?? 0); i++) {
-                      double previousBalance = currentBalance;
-                      double interestForYear =
+                      final double previousBalance = currentBalance;
+                      final double interestForYear =
                           currentBalance * ((data.rate ?? 0) / 100);
                       currentBalance = previousBalance + interestForYear;
 
@@ -767,7 +774,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 onPressed: () {
                   _showDeleteConfirmDialog(context, 'compound', () {
                     setState(() {
-                      loanRepo.deleteCompoundInterest(data.id);
+                      compoundRepo.delete(data.id);
                     });
                   });
                 },
@@ -790,7 +797,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _buildAiHistory() {
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: loanRepo.getAiAnalysisHistory(),
+      future: aiRepo.getAiAnalysisHistory(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Center(
@@ -801,13 +808,14 @@ class _HistoryPageState extends State<HistoryPage> {
           return _buildEmptyState("No AI analysis history yet.");
         }
 
-        List<Map<String, dynamic>> records = snapshot.data!;
-        List<Widget> listItems = [];
+        final List<Map<String, dynamic>> records = snapshot.data!;
+        final List<Widget> listItems = [];
         String currentLabel = "";
 
         for (var record in records) {
-          DateTime? date = DateTime.tryParse(record["date"] ?? "");
-          String label = _getDateLabel(date);
+          final DateTime? date =
+              DateTime.tryParse((record["date"] as String?) ?? "");
+          final String label = _getDateLabel(date);
           if (label != currentLabel) {
             listItems.add(Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 8, left: 24),
@@ -836,9 +844,17 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Widget _buildAiCard(Map<String, dynamic> record) {
-    final loanData = record["loanData"] ?? {};
-    final response = record["response"] ?? {};
-    final date = DateTime.tryParse(record["date"] ?? "");
+    final Map<String, dynamic> loanData =
+        Map<String, dynamic>.from(record["loanData"] as Map? ?? {});
+    final Map<String, dynamic> response =
+        Map<String, dynamic>.from(record["response"] as Map? ?? {});
+    final date = DateTime.tryParse((record["date"] as String?) ?? "");
+
+    final overallScore = response["analysis"]?["summary"]?["overallScore"] ?? 0;
+    final scoreLabel =
+        response["analysis"]?["summary"]?["scoreLabel"] ?? "N/A";
+    final loanType = loanData["loanType"] ?? "Loan";
+    final region = loanData["region"] ?? "Global";
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -861,53 +877,63 @@ class _HistoryPageState extends State<HistoryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF0FDFA),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.psychology,
-                          color: Color(0xFF0D9488), size: 18),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        "${loanData['loanType'] ?? 'Loan'} Analysis",
+                    child: const Icon(Icons.psychology,
+                        color: Color(0xFF6366F1), size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "$loanType Analysis",
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: Color(0xFF0F172A),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                      Text(
+                        date != null
+                            ? DateFormat('MMM dd, yyyy').format(date)
+                            : "Recent",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                date != null ? _timeFormat.format(date) : "",
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF9CA3AF),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  "Score: $overallScore",
+                  style: const TextStyle(
+                    color: Color(0xFF10B981),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
-            "Property Value: ${_currencyFormat.format(double.tryParse(loanData['propertyValue'].toString()) ?? 0)}",
-            style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: Color(0xFF1F2937)),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Analysis for ${loanData['region'] ?? 'Unknown'} market.",
+            "Region: $region • Status: $scoreLabel",
             style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 20),
@@ -917,7 +943,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     _adHelper.handleAdDetailNavigation(() {
-                      Navigator.pushNamed(context, 'ai_insights', arguments: {
+                      context.push(AppRoutes.aiInsights, extra: {
                         ...loanData,
                         'savedResponse': response,
                         'isHistory': true,
@@ -930,7 +956,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D9488),
+                    backgroundColor: const Color(0xFF6366F1),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -945,7 +971,8 @@ class _HistoryPageState extends State<HistoryPage> {
                 onPressed: () {
                   _showDeleteConfirmDialog(context, 'ai', () {
                     setState(() {
-                      loanRepo.deleteAiAnalysis(record["id"]);
+                      final id = record["id"] as int? ?? 0;
+                      aiRepo.deleteAiAnalysis(id);
                     });
                   });
                 },
@@ -988,7 +1015,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   void _showDeleteConfirmDialog(
       BuildContext context, String itemType, VoidCallback onDelete) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
@@ -1035,7 +1062,7 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   void _showClearAllConfirmDialog(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
@@ -1068,9 +1095,9 @@ class _HistoryPageState extends State<HistoryPage> {
                     color: Colors.white, fontWeight: FontWeight.bold)),
             onPressed: () {
               setState(() {
-                loanRepo.deleteAllRecord();
-                loanRepo.deleteAllCompoundInterest();
-                loanRepo.deleteAllAiAnalysis();
+                loanRepo.deleteAllRecords();
+                compoundRepo.deleteAll();
+                aiRepo.deleteAllAiAnalysis();
               });
               Navigator.pop(context);
               AnalyticsService.logEvent('history_cleared',

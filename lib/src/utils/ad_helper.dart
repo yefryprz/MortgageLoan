@@ -1,12 +1,12 @@
 import 'dart:io';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:mortgageloan/src/config/env.dart';
 
 class AdHelper {
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return dotenv.get('ADMOB_BANNER_ANDROID', fallback: '');
+      return Env.admobBannerAndroid;
     } else if (Platform.isIOS) {
-      return dotenv.get('ADMOB_BANNER_IOS', fallback: '');
+      return Env.admobBannerIos;
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -14,9 +14,9 @@ class AdHelper {
 
   static String get interstitialAdUnitId {
     if (Platform.isAndroid) {
-      return dotenv.get('ADMOB_INTERSTITIAL_ANDROID', fallback: '');
+      return Env.admobInterstitialAndroid;
     } else if (Platform.isIOS) {
-      return dotenv.get('ADMOB_INTERSTITIAL_IOS', fallback: '');
+      return Env.admobInterstitialIos;
     } else {
       throw UnsupportedError('Unsupported platform');
     }

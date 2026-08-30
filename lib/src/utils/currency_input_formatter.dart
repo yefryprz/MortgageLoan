@@ -16,12 +16,12 @@ class CurrencyInputFormatter extends TextInputFormatter {
       return oldValue;
     }
 
-    String cleanText = newValue.text.replaceAll(',', '');
+    final String cleanText = newValue.text.replaceAll(',', '');
 
     // Split into integer and decimal parts
     final parts = cleanText.split('.');
     String integerPart = parts[0];
-    String? decimalPart = parts.length > 1 ? parts[1] : null;
+    final String? decimalPart = parts.length > 1 ? parts[1] : null;
 
     // Format integer part
     if (integerPart.isNotEmpty) {
@@ -32,22 +32,22 @@ class CurrencyInputFormatter extends TextInputFormatter {
       }
     }
 
-    String formattedText =
+    final String formattedText =
         integerPart + (decimalPart != null ? '.$decimalPart' : '');
 
     // Improved cursor position calculation
-    int oldOffset = oldValue.selection.end;
-    int oldTextLength = oldValue.text.length;
+    final int oldOffset = oldValue.selection.end;
+    final int oldTextLength = oldValue.text.length;
     int oldCommasBefore = 0;
     for (int i = 0; i < min(oldOffset, oldTextLength); i++) {
       if (oldValue.text[i] == ',') oldCommasBefore++;
     }
-    int rawOffsetBefore = oldOffset - oldCommasBefore;
+    final int rawOffsetBefore = oldOffset - oldCommasBefore;
 
     // Digits added or removed
-    int digitDiff = newValue.text.replaceAll(',', '').length -
+    final int digitDiff = newValue.text.replaceAll(',', '').length -
         oldValue.text.replaceAll(',', '').length;
-    int targetRawOffset = rawOffsetBefore + digitDiff;
+    final int targetRawOffset = rawOffsetBefore + digitDiff;
 
     int newOffset = 0;
     int rawCount = 0;

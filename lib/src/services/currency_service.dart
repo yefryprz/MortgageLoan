@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart';
+import 'package:mortgageloan/src/config/env.dart';
 import 'package:mortgageloan/src/services/cache_service.dart';
 
 class CurrencyService {
-  static final String _baseUrl = dotenv.get('CURRENCY_BASE_URL', fallback: '');
-  static final String _bearerToken = dotenv.get('CURRENCY_TOKEN', fallback: '');
+  static final String _baseUrl = Env.currencyBaseUrl;
+  static final String _bearerToken = Env.currencyToken;
 
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
@@ -34,9 +33,13 @@ class CurrencyService {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final Map<String, dynamic> rates = data['response']['rates'] ?? {};
-        final double rate = rates[toCurrency]?.toDouble() ?? 0.0;
+        final Map<String, dynamic> data =
+            Map<String, dynamic>.from(json.decode(response.body) as Map);
+        final dynamic respObj = data['response'];
+        final Map<String, dynamic> rates = respObj is Map
+            ? Map<String, dynamic>.from(respObj['rates'] as Map? ?? {})
+            : {};
+        final double rate = (rates[toCurrency] as num?)?.toDouble() ?? 0.0;
 
         if (rate == 0.0) {
           throw Exception('Exchange rate not found for $toCurrency');
@@ -74,63 +77,37 @@ class CurrencyService {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final Map<String, dynamic> responseData = data['response'] ?? {};
+        final Map<String, dynamic> data =
+            Map<String, dynamic>.from(json.decode(response.body) as Map);
+        final dynamic respObj = data['response'];
+        final Map<String, dynamic> responseData =
+            respObj is Map ? Map<String, dynamic>.from(respObj) : {};
 
-        Map<String, double> timeseries = {};
+        final Map<String, double> timeseries = {};
 
         // The API returns dates as keys, and inside each date, currency codes as keys
         responseData.forEach((dateKey, value) {
-          if (value is Map<String, dynamic> && value.containsKey(toCurrency)) {
-            timeseries[dateKey] = (value[toCurrency] as num).toDouble();
+          if (value is Map && value.containsKey(toCurrency)) {
+            final val = value[toCurrency];
+            if (val is num) {
+              timeseries[dateKey] = val.toDouble();
+            }
           }
         });
 
-        // Sort by date key
-        var sortedKeys = timeseries.keys.toList()..sort();
-        Map<String, double> sortedTimeseries = {};
-        for (var key in sortedKeys) {
-          sortedTimeseries[key] = timeseries[key]!;
-        }
-
-        return sortedTimeseries;
+        return timeseries;
       } else {
-        // Return dummy data for development if we hit limits or errors during testing
-        if (response.statusCode == 401 ||
-            response.statusCode == 403 ||
-            response.statusCode == 429) {
-          debugPrint(
-              'API Error ${response.statusCode}, using fallback timeseries data');
-          return _generateFallbackTimeseries(startDate, endDate);
-        }
-        throw Exception('Failed to load timeseries: ${response.body}');
+        throw Exception('Failed to load timeseries: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Exception in getTimeSeries: $e');
-      // Return fallback so UI can continue
-      return _generateFallbackTimeseries(startDate, endDate);
+      throw Exception('Error fetching timeseries: $e');
     }
-  }
-
-  Map<String, double> _generateFallbackTimeseries(
-      DateTime start, DateTime end) {
-    Map<String, double> data = {};
-    DateTime current = start;
-    double baseVal = 1.0;
-    while (current.isBefore(end) || current.isAtSameMomentAs(end)) {
-      final dateStr = _formatDate(current);
-      // Sine wave pattern for testing
-      data[dateStr] = baseVal + (0.05 * current.day % 10);
-      current = current.add(const Duration(days: 1));
-    }
-    return data;
   }
 
   Future<Map<String, String>> getAvailableCurrencies() async {
-    final cachedCurrencies =
-        CacheService().get<Map<String, String>>('currencies');
-    if (cachedCurrencies != null) {
-      return cachedCurrencies;
+    final cached = CacheService().get<Map<String, String>>('currencies');
+    if (cached != null) {
+      return cached;
     }
 
     try {
@@ -143,20 +120,25 @@ class CurrencyService {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        final List<dynamic> currencies = data['response'] ?? [];
+        final Map<String, dynamic> data =
+            Map<String, dynamic>.from(json.decode(response.body) as Map);
+        final List<dynamic> currencies =
+            (data['response'] as List<dynamic>?) ?? [];
 
-        Map<String, Map<String, String>> tempMap = {};
+        final Map<String, Map<String, String>> tempMap = {};
         for (var currency in currencies) {
-          final String shortCode = currency['short_code'] ?? '';
-          final String name = currency['name'] ?? '';
-          if (shortCode.isNotEmpty && name.isNotEmpty) {
-            tempMap[name] = {'shortCode': shortCode, 'name': name};
+          if (currency is Map) {
+            final String shortCode =
+                (currency['short_code'] as String?) ?? '';
+            final String name = (currency['name'] as String?) ?? '';
+            if (shortCode.isNotEmpty && name.isNotEmpty) {
+              tempMap[name] = {'shortCode': shortCode, 'name': name};
+            }
           }
         }
 
         final sortedKeys = tempMap.keys.toList()..sort();
-        Map<String, String> currencyMap = {};
+        final Map<String, String> currencyMap = {};
         for (var key in sortedKeys) {
           final item = tempMap[key]!;
           currencyMap[item['shortCode']!] = item['name']!;

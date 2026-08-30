@@ -1,30 +1,19 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:mortgageloan/src/models/country_model.dart';
+import 'package:mortgageloan/src/router/routes.dart';
 import 'package:mortgageloan/src/services/cache_service.dart';
+import 'package:mortgageloan/src/utils/currency_input_formatter.dart';
+import 'package:mortgageloan/src/utils/loan_simulation_calculator.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 
-class Country {
-  final String name;
-  final String flagUrl;
-
-  Country({required this.name, required this.flagUrl});
-
-  factory Country.fromJson(Map<String, dynamic> json) {
-    return Country(
-      name: json['name']['common'] ?? 'Unknown',
-      flagUrl: json['flags']['png'] ?? '',
-    );
-  }
-}
-
 class LoanSimulatorPage extends StatefulWidget {
-  const LoanSimulatorPage({Key? key}) : super(key: key);
+  const LoanSimulatorPage({super.key});
 
   @override
   State<LoanSimulatorPage> createState() => _LoanSimulatorPageState();
@@ -90,9 +79,11 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
       final response = await http.get(
           Uri.parse('https://restcountries.com/v3.1/all?fields=name,flags'));
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        final List<Country> fetchedCountries =
-            data.map((json) => Country.fromJson(json)).toList();
+        final List<dynamic> data = json.decode(response.body) as List<dynamic>;
+        final List<Country> fetchedCountries = data
+            .map((json) =>
+                Country.fromJson(Map<String, dynamic>.from(json as Map)))
+            .toList();
         fetchedCountries.sort((a, b) => a.name.compareTo(b.name));
 
         CacheService().set('countries', fetchedCountries);
@@ -131,71 +122,27 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
     super.dispose();
   }
 
-  double _calculateMonthlyPayment(
-      double principal, double annualRate, int years) {
-    if (annualRate == 0) return principal / (years * 12);
-    final r = (annualRate / 100) / 12;
-    final n = years * 12;
-    return (principal * r * pow(1 + r, n)) / (pow(1 + r, n) - 1);
-  }
-
-  Map<String, double> _simulateLoan({
-    required double principal,
-    required double annualRate,
-    required int years,
-    double lumpSum = 0,
-    int lumpSumMonth = 0,
-    double monthlyExtra = 0,
-  }) {
-    if (principal <= 0) return {"totalInterest": 0, "monthsSaved": 0};
-
-    final r = (annualRate / 100) / 12;
-    final standardMonthlyPayment =
-        _calculateMonthlyPayment(principal, annualRate, years);
-
-    double balance = principal;
-    double totalInterest = 0;
-    int monthsElapsed = 0;
-
-    for (int i = 1; i <= years * 12; i++) {
-      if (balance <= 0) break;
-
-      double interestForMonth = balance * r;
-      totalInterest += interestForMonth;
-
-      double currentPayment = standardMonthlyPayment + monthlyExtra;
-
-      if (i == lumpSumMonth) {
-        currentPayment += lumpSum;
-      }
-
-      double principalPayment = currentPayment - interestForMonth;
-      balance -= principalPayment;
-      monthsElapsed++;
-    }
-
-    return {
-      "totalInterest": totalInterest,
-      "monthsSaved": ((years * 12) - monthsElapsed).toDouble(),
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     // Derived Calculations
     final double principal =
         _selectedLoanType == 2 ? _amount : (_amount - _downPayment);
     final double baseMonthlyPayment =
-        _calculateMonthlyPayment(principal, _rate, _durationYears);
-    final Map<String, double> baseSimulation = _simulateLoan(
-        principal: principal, annualRate: _rate, years: _durationYears);
-    final double baseTotalInterest = baseSimulation['totalInterest'] ?? 0;
+        LoanSimulationCalculator.calculateMonthlyPayment(
+            principal, _rate, _durationYears);
+    final LoanSimulationResult baseSimulation =
+        LoanSimulationCalculator.simulateLoan(
+      principal: principal,
+      annualRate: _rate,
+      years: _durationYears,
+    );
+    final double baseTotalInterest = baseSimulation.totalInterest;
 
     // Advanced Scenario Calculation
-    Map<String, double> advancedSimulation;
+    LoanSimulationResult advancedSimulation;
     if (_advancedScenarioMode == 0) {
       // Lump Sum
-      advancedSimulation = _simulateLoan(
+      advancedSimulation = LoanSimulationCalculator.simulateLoan(
         principal: principal,
         annualRate: _rate,
         years: _durationYears,
@@ -204,7 +151,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
       );
     } else {
       // Monthly Recurring
-      advancedSimulation = _simulateLoan(
+      advancedSimulation = LoanSimulationCalculator.simulateLoan(
         principal: principal,
         annualRate: _rate,
         years: _durationYears,
@@ -212,17 +159,16 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
       );
     }
 
-    final double advancedTotalInterest =
-        advancedSimulation['totalInterest'] ?? 0;
+    final double advancedTotalInterest = advancedSimulation.totalInterest;
     final double interestSavings = baseTotalInterest - advancedTotalInterest;
-    final double monthsSaved = advancedSimulation['monthsSaved'] ?? 0;
+    final double monthsSaved = advancedSimulation.monthsSaved;
 
     return Scaffold(
       key: _scaffoldKey,
       drawerEnableOpenDragGesture: false,
-      drawer: const CustomDrawer(currentRoute: "simulator"),
+      drawer: const CustomDrawer(currentRoute: AppRoutes.simulator),
       backgroundColor: const Color(0xFFF6F8F9),
-      bottomNavigationBar: CustomAdBanner(),
+      bottomNavigationBar: const CustomAdBanner(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -377,7 +323,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
   }
 
   Widget _buildTabBtn(int index, IconData icon, String title) {
-    bool isActive = _selectedLoanType == index;
+    final bool isActive = _selectedLoanType == index;
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -456,7 +402,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
   }
 
   Widget _buildLoanDetailsSection() {
-    String valueLabel = _selectedLoanType == 0
+    final String valueLabel = _selectedLoanType == 0
         ? "Property Value"
         : _selectedLoanType == 1
             ? "Vehicle Value"
@@ -465,17 +411,17 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               "Loan Details",
               style: TextStyle(
                   color: Color(0xFF1F2937),
                   fontSize: 18,
                   fontWeight: FontWeight.bold),
             ),
-            const Icon(Icons.info_outline, color: Color(0xFF14EFCD), size: 20),
+            Icon(Icons.info_outline, color: Color(0xFF14EFCD), size: 20),
           ],
         ),
         const SizedBox(height: 24),
@@ -626,7 +572,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
   }
 
   Widget _buildInputRow(String label, TextEditingController controller,
-      String symbol, Function(double) onChanged,
+      String symbol, ValueChanged<double> onChanged,
       {bool isSuffix = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -670,7 +616,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
                   onChanged: (val) {
                     // Remove commas for parsing
                     final cleanVal = val.replaceAll(',', '');
-                    double parsed = double.tryParse(cleanVal) ?? 0;
+                    final double parsed = double.tryParse(cleanVal) ?? 0;
 
                     // Update controller text with separators if needed
                     // Doing this on every keystroke might be tricky with cursor position
@@ -692,7 +638,7 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
   }
 
   Widget _buildSlider(
-      double value, double min, double max, Function(double) onChanged) {
+      double value, double min, double max, ValueChanged<double> onChanged) {
     return SliderTheme(
       data: SliderThemeData(
         activeTrackColor: const Color(0xFF3ac0b5),
@@ -1043,17 +989,17 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
           ),
           const SizedBox(height: 16),
           RichText(
-            text: TextSpan(
-              style: const TextStyle(
+            text: const TextSpan(
+              style: TextStyle(
                   color: Color(0xFF4F46E5), fontSize: 14, height: 1.5),
               children: [
-                const TextSpan(
+                TextSpan(
                     text:
                         "Based on current market trends in your region, shorter term options could save you "),
                 TextSpan(
                     text: "significant amounts",
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                const TextSpan(
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                TextSpan(
                     text:
                         " in total interest compared to your current selection."),
               ],
@@ -1068,9 +1014,10 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
               final double downPaymentPct =
                   _amount > 0 ? (_downPayment / _amount) * 100 : 0;
               final double monthlyPay =
-                  _calculateMonthlyPayment(principal, _rate, _durationYears);
+                  LoanSimulationCalculator.calculateMonthlyPayment(
+                      principal, _rate, _durationYears);
 
-              Navigator.pushNamed(context, 'ai_insights', arguments: {
+              context.push(AppRoutes.aiInsights, extra: {
                 'region': _selectedCountry?.name ?? "Global",
                 'currency': "Local Currency",
                 'loanType': _selectedLoanType == 0
@@ -1112,70 +1059,6 @@ class _LoanSimulatorPageState extends State<LoanSimulatorPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class CurrencyInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.isEmpty) {
-      return newValue.copyWith(text: '');
-    }
-
-    // Only allow numbers, commas, and one decimal point
-    final regExp = RegExp(r'^\d*[0-9,]*\.?\d*$');
-    if (!regExp.hasMatch(newValue.text)) {
-      return oldValue;
-    }
-
-    String cleanText = newValue.text.replaceAll(',', '');
-
-    // Split into integer and decimal parts
-    final parts = cleanText.split('.');
-    String integerPart = parts[0];
-    String? decimalPart = parts.length > 1 ? parts[1] : null;
-
-    // Format integer part
-    if (integerPart.isNotEmpty) {
-      final intValue = int.tryParse(integerPart);
-      if (intValue == null && integerPart != '') return oldValue;
-      if (intValue != null) {
-        integerPart = NumberFormat('#,###', 'en_US').format(intValue);
-      }
-    }
-
-    String formattedText =
-        integerPart + (decimalPart != null ? '.$decimalPart' : '');
-
-    // Improved cursor position calculation
-    int oldOffset = oldValue.selection.end;
-    int oldTextLength = oldValue.text.length;
-    int oldCommasBefore = 0;
-    for (int i = 0; i < min(oldOffset, oldTextLength); i++) {
-      if (oldValue.text[i] == ',') oldCommasBefore++;
-    }
-    int rawOffsetBefore = oldOffset - oldCommasBefore;
-
-    // Digits added or removed
-    int digitDiff = newValue.text.replaceAll(',', '').length -
-        oldValue.text.replaceAll(',', '').length;
-    int targetRawOffset = rawOffsetBefore + digitDiff;
-
-    int newOffset = 0;
-    int rawCount = 0;
-    while (newOffset < formattedText.length && rawCount < targetRawOffset) {
-      if (formattedText[newOffset] != ',') {
-        rawCount++;
-      }
-      newOffset++;
-    }
-
-    return TextEditingValue(
-      text: formattedText,
-      selection:
-          TextSelection.collapsed(offset: min(newOffset, formattedText.length)),
     );
   }
 }

@@ -12,7 +12,9 @@ class CompoundRow {
 }
 
 class CompoundBreakdownPage extends StatelessWidget {
-  const CompoundBreakdownPage({Key? key}) : super(key: key);
+  final Map<String, dynamic>? args;
+
+  const CompoundBreakdownPage({super.key, this.args});
 
   String formatCurrencyWhole(double value) {
     if (value < 0) value = 0;
@@ -30,26 +32,28 @@ class CompoundBreakdownPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    final double principal = args['principal'] as double;
-    final double rate = args['rate'] as double;
-    final double result = args['result'] as double;
-    final List<CompoundRow> allRows =
-        (args['yearlyDetails'] as List).map((row) {
+    final Map<String, dynamic> pageArgs = args ??
+        (ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?) ??
+        {};
+    final double principal = (pageArgs['principal'] as num?)?.toDouble() ?? 0;
+    final double rate = (pageArgs['rate'] as num?)?.toDouble() ?? 0;
+    final double result = (pageArgs['result'] as num?)?.toDouble() ?? 0;
+    final List<dynamic> details = (pageArgs['yearlyDetails'] as List<dynamic>?) ?? [];
+    final List<CompoundRow> allRows = details.map((row) {
+      final r = row as Map<dynamic, dynamic>;
       return CompoundRow(
-        row['year'] as int,
-        row['startBalance'] as double,
-        row['interest'] as double,
-        row['endBalance'] as double,
+        r['year'] as int,
+        (r['startBalance'] as num).toDouble(),
+        (r['interest'] as num).toDouble(),
+        (r['endBalance'] as num).toDouble(),
       );
     }).toList();
 
-    double totalInterest = result - principal;
+    final double totalInterest = result - principal;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8F9),
-      bottomNavigationBar: CustomAdBanner(),
+      bottomNavigationBar: const CustomAdBanner(),
       body: Column(
         children: [
           _buildHeader(context),
@@ -213,13 +217,13 @@ class CompoundBreakdownPage extends StatelessWidget {
                     2: FlexColumnWidth(2),
                   },
                   children: allRows.map((r) {
-                    double cumulativeInterest =
+                    final double cumulativeInterest =
                         r.endBalance - allRows.first.startBalance;
                     return TableRow(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                              color: const Color(0xFFF1F5F9), width: 1),
+                              color: Color(0xFFF1F5F9), width: 1),
                         ),
                       ),
                       children: [

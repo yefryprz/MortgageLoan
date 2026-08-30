@@ -1,5 +1,5 @@
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:mortgageloan/src/database/hive.dart';
+import 'package:mortgageloan/src/database/ad_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'ad_helper.dart';
 
@@ -7,7 +7,7 @@ class InterstitialAdHelper {
   final String _adCountKey;
   final int _adFrequency;
   InterstitialAd? _interstitialAd;
-  final LoanData _loanRepo = LoanData();
+  final AdRepository _adRepo = AdRepository();
 
   InterstitialAdHelper({required String adCountKey, int adFrequency = 4})
       : _adCountKey = adCountKey,
@@ -23,7 +23,7 @@ class InterstitialAdHelper {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
               _interstitialAd = null;
-              _loanRepo.resetAdCount(_adCountKey);
+              _adRepo.resetAdCount(_adCountKey);
               load(); // Load the next ad
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
@@ -53,15 +53,15 @@ class InterstitialAdHelper {
 
   Future<void> handleAdDetailNavigation(void Function() onNavigate) async {
     onNavigate();
-    int adCount = await _loanRepo.getAdCount(_adCountKey);
+    final int adCount = await _adRepo.getAdCount(_adCountKey);
     if (adCount >= _adFrequency) {
       if (_interstitialAd != null) {
         await show();
       } else {
-        _loanRepo.resetAdCount(_adCountKey);
+        _adRepo.resetAdCount(_adCountKey);
       }
     } else {
-      _loanRepo.AdCountUp(_adCountKey);
+      _adRepo.incrementAdCount(_adCountKey);
     }
   }
 

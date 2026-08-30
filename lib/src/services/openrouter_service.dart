@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:mortgageloan/src/config/env.dart';
 import '../models/ai_analysis_model.dart';
 
 class OpenRouterService {
@@ -110,12 +110,12 @@ Respond ONLY with the following JSON Array/Object schema, without any additional
   Future<AiAnalysisResponse> getAiAnalysis({
     required Map<String, dynamic> loanData,
   }) async {
-    final apiKey = dotenv.env['AI_API_KEY'];
-    final apiUrl = dotenv.env['AI_API_URL'] ?? '';
-    final aiModel = dotenv.env['AI_MODEL'] ?? '';
+    final apiKey = Env.aiApiKey;
+    final apiUrl = Env.aiApiUrl;
+    final aiModel = Env.aiModel;
 
-    if (apiKey == null || apiKey.isEmpty || apiKey == 'your_key_here') {
-      throw Exception('AI_API_KEY not found in .env');
+    if (apiKey.isEmpty || apiKey == 'your_key_here') {
+      throw Exception('AI_API_KEY is not configured');
     }
 
     String userPrompt = _userPromptTemplate;
@@ -153,10 +153,18 @@ Respond ONLY with the following JSON Array/Object schema, without any additional
     );
 
     if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      final contentMessage =
-          decoded['choices']?[0]?['message']?['content'] ?? '{}';
-      final jsonContent = jsonDecode(contentMessage);
+      final Map<String, dynamic> decoded =
+          Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+      final List<dynamic>? choices = decoded['choices'] as List<dynamic>?;
+      final Map<String, dynamic>? firstChoice = choices != null && choices.isNotEmpty
+          ? Map<String, dynamic>.from(choices[0] as Map)
+          : null;
+      final Map<String, dynamic>? message = firstChoice?['message'] != null
+          ? Map<String, dynamic>.from(firstChoice!['message'] as Map)
+          : null;
+      final String contentMessage = (message?['content'] as String?) ?? '{}';
+      final Map<String, dynamic> jsonContent =
+          Map<String, dynamic>.from(jsonDecode(contentMessage) as Map);
       return AiAnalysisResponse.fromJson(jsonContent);
     } else {
       throw Exception(

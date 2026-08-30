@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mortgageloan/src/router/routes.dart';
 import 'package:mortgageloan/src/services/currency_service.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
@@ -8,8 +9,10 @@ import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
 import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class CurrencyConvertPage extends StatefulWidget {
+  const CurrencyConvertPage({super.key});
+
   @override
-  _CurrencyConvertPageState createState() => _CurrencyConvertPageState();
+  State<CurrencyConvertPage> createState() => _CurrencyConvertPageState();
 }
 
 class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
@@ -89,7 +92,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
     return Scaffold(
       key: _scaffoldKey,
       drawerEnableOpenDragGesture: false,
-      drawer: const CustomDrawer(currentRoute: "currency"),
+      drawer: const CustomDrawer(currentRoute: AppRoutes.currency),
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -106,7 +109,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomAdBanner(),
+      bottomNavigationBar: const CustomAdBanner(),
     );
   }
 
@@ -346,7 +349,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
                     ),
                     onChanged: (val) {
                       setState(() {
-                        String clean = val.replaceAll(RegExp(r'[^0-9.]'), '');
+                        final String clean = val.replaceAll(RegExp(r'[^0-9.]'), '');
                         _amount = double.tryParse(clean) ?? 0;
                         if (_amount > 0) _convertCurrency();
                       });
@@ -439,7 +442,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   }
 
   Widget _rangeBtn(String label) {
-    bool isActive = _selectedRange == label;
+    final bool isActive = _selectedRange == label;
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -471,9 +474,9 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   Widget _buildTrendChart() {
     if (_timeseriesData.isEmpty) return const SizedBox();
 
-    List<FlSpot> spots = [];
-    double minX = 0;
-    double maxX = (_timeseriesData.length - 1).toDouble();
+    final List<FlSpot> spots = [];
+    const double minX = 0;
+    final double maxX = (_timeseriesData.length - 1).toDouble();
     double minY = _timeseriesData.values.reduce((a, b) => a < b ? a : b);
     double maxY = _timeseriesData.values.reduce((a, b) => a > b ? a : b);
 
@@ -491,8 +494,8 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
 
     return LineChart(
       LineChartData(
-        gridData: FlGridData(show: false),
-        titlesData: FlTitlesData(show: false),
+        gridData: const FlGridData(show: false),
+        titlesData: const FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
         minX: minX,
         maxX: maxX,
@@ -579,13 +582,13 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
     if (_timeseriesData.length < 2) return const SizedBox();
 
     double firstRate = _timeseriesData.values.first;
-    double lastRate = _timeseriesData.values.last;
+    final double lastRate = _timeseriesData.values.last;
 
     // Safety check for firstRate = 0
     if (firstRate == 0) firstRate = 1.0;
 
-    double pctChange = ((lastRate - firstRate) / firstRate) * 100;
-    bool isPositive = pctChange >= 0;
+    final double pctChange = ((lastRate - firstRate) / firstRate) * 100;
+    final bool isPositive = pctChange >= 0;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -646,12 +649,12 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              const Row(
                 children: [
-                  const Icon(Icons.analytics_outlined,
+                  Icon(Icons.analytics_outlined,
                       color: Color(0xFF3ac0b5), size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
+                  SizedBox(width: 8),
+                  Text(
                     'Currency Insights',
                     style: TextStyle(
                       color: Color(0xFF1F2937),
@@ -709,22 +712,28 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
     // Very simple logic: position based on current rate vs 30d min/max
     double minRange = _timeseriesData.values.reduce((a, b) => a < b ? a : b);
     double maxRange = _timeseriesData.values.reduce((a, b) => a > b ? a : b);
-    double current = _currentRate;
+    final double current = _currentRate;
 
-    if (current < minRange) minRange = current;
-    if (current > maxRange) maxRange = current;
+    if (current < minRange) {
+      minRange = current;
+    }
+    if (current > maxRange) {
+      maxRange = current;
+    }
 
-    double span = maxRange - minRange;
-    double percent = span == 0 ? 0.5 : (current - minRange) / span;
+    final double span = maxRange - minRange;
+    final double percent = span == 0 ? 0.5 : (current - minRange) / span;
 
     String label = "Neutral";
-    if (percent < 0.2)
+    if (percent < 0.2) {
       label = "Oversold";
-    else if (percent < 0.4)
+    } else if (percent < 0.4) {
       label = "Neutral-Bearish";
-    else if (percent > 0.8)
+    } else if (percent > 0.8) {
       label = "Overbought";
-    else if (percent > 0.6) label = "Neutral-Bullish";
+    } else if (percent > 0.6) {
+      label = "Neutral-Bullish";
+    }
 
     return Column(
       children: [
@@ -802,8 +811,8 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
                     TextSpan(text: text),
                     TextSpan(
                       text: highlightText,
-                      style: TextStyle(
-                          color: const Color(0xFF3ac0b5),
+                      style: const TextStyle(
+                          color: Color(0xFF3ac0b5),
                           fontWeight: FontWeight.bold),
                     ),
                     const TextSpan(text: "."),
@@ -820,14 +829,14 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   String _getBestDayOfWeek() {
     // A slightly pseudo-random calculation that generates consistent output from timeseries keys
     if (_timeseriesData.isEmpty) return "Mondays";
-    List<String> days = [
+    final List<String> days = [
       "Mondays",
       "Tuesdays",
       "Wednesdays",
       "Thursdays",
       "Fridays"
     ];
-    int hash = _timeseriesData.values.last.toInt() +
+    final int hash = _timeseriesData.values.last.toInt() +
         _fromCurrency.length +
         _toCurrency.length +
         _timeseriesData.length;
@@ -837,7 +846,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
   double _getRiskSupportLevel() {
     // Return 98% of the lowest range
     if (_timeseriesData.isEmpty) return _currentRate * 0.98;
-    double min = _timeseriesData.values.reduce((a, b) => a < b ? a : b);
+    final double min = _timeseriesData.values.reduce((a, b) => a < b ? a : b);
     return min * 0.99;
   }
 
@@ -943,7 +952,7 @@ class _CurrencyConvertPageState extends State<CurrencyConvertPage> {
         },
       );
 
-      String currentConversionPair = "$_fromCurrency-$_toCurrency";
+      final String currentConversionPair = "$_fromCurrency-$_toCurrency";
       if (_lastConversionPair != currentConversionPair) {
         _lastConversionPair = currentConversionPair;
         _adHelper.handleAdDetailNavigation(() {});

@@ -6,7 +6,8 @@ class AiAnalysisResponse {
   factory AiAnalysisResponse.fromJson(Map<String, dynamic> json) {
     return AiAnalysisResponse(
       analysis: json['analysis'] != null
-          ? AiAnalysisData.fromJson(json['analysis'])
+          ? AiAnalysisData.fromJson(
+              Map<String, dynamic>.from(json['analysis'] as Map))
           : null,
     );
   }
@@ -64,41 +65,53 @@ class AiAnalysisData {
       region: json['region'] as String?,
       loanType: json['loanType'] as String?,
       status: json['status'] as String?,
-      summary:
-          json['summary'] != null ? Summary.fromJson(json['summary']) : null,
+      summary: json['summary'] != null
+          ? Summary.fromJson(Map<String, dynamic>.from(json['summary'] as Map))
+          : null,
       marketComparison: json['marketComparison'] != null
-          ? MarketComparison.fromJson(json['marketComparison'])
+          ? MarketComparison.fromJson(
+              Map<String, dynamic>.from(json['marketComparison'] as Map))
           : null,
       optimalRepaymentPlan: json['optimalRepaymentPlan'] != null
-          ? OptimalRepaymentPlan.fromJson(json['optimalRepaymentPlan'])
+          ? OptimalRepaymentPlan.fromJson(
+              Map<String, dynamic>.from(json['optimalRepaymentPlan'] as Map))
           : null,
       refinancingAlert: json['refinancingAlert'] != null
-          ? RefinancingAlert.fromJson(json['refinancingAlert'])
+          ? RefinancingAlert.fromJson(
+              Map<String, dynamic>.from(json['refinancingAlert'] as Map))
           : null,
       bankRecommendations: (json['bankRecommendations'] as List<dynamic>?)
-          ?.map((e) => BankRecommendation.fromJson(e))
+          ?.map((e) => BankRecommendation.fromJson(
+              Map<String, dynamic>.from(e as Map)))
           .toList(),
       negotiationStrategies: (json['negotiationStrategies'] as List<dynamic>?)
-          ?.map((e) => NegotiationStrategy.fromJson(e))
+          ?.map((e) => NegotiationStrategy.fromJson(
+              Map<String, dynamic>.from(e as Map)))
           .toList(),
       riskAssessment: json['riskAssessment'] != null
-          ? RiskAssessment.fromJson(json['riskAssessment'])
+          ? RiskAssessment.fromJson(
+              Map<String, dynamic>.from(json['riskAssessment'] as Map))
           : null,
       taxImplications: json['taxImplications'] != null
-          ? TaxImplications.fromJson(json['taxImplications'])
+          ? TaxImplications.fromJson(
+              Map<String, dynamic>.from(json['taxImplications'] as Map))
           : null,
       insuranceRecommendations:
           (json['insuranceRecommendations'] as List<dynamic>?)
-              ?.map((e) => InsuranceRecommendation.fromJson(e))
+              ?.map((e) => InsuranceRecommendation.fromJson(
+                  Map<String, dynamic>.from(e as Map)))
               .toList(),
       extraPaymentImpact: json['extraPaymentImpact'] != null
-          ? ExtraPaymentImpact.fromJson(json['extraPaymentImpact'])
+          ? ExtraPaymentImpact.fromJson(
+              Map<String, dynamic>.from(json['extraPaymentImpact'] as Map))
           : null,
       amortizationSnapshot: json['amortizationSnapshot'] != null
-          ? AmortizationSnapshot.fromJson(json['amortizationSnapshot'])
+          ? AmortizationSnapshot.fromJson(
+              Map<String, dynamic>.from(json['amortizationSnapshot'] as Map))
           : null,
       actionItems: (json['actionItems'] as List<dynamic>?)
-          ?.map((e) => ActionItem.fromJson(e))
+          ?.map((e) =>
+              ActionItem.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
     );
   }
