@@ -4,7 +4,7 @@ import 'package:mortgageloan/src/database/ai_analysis_repository.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
 import '../models/ai_analysis_model.dart';
-import '../services/openrouter_service.dart';
+import '../services/nvidia_service.dart';
 import '../services/analytics_service.dart';
 
 class AiInsightsPage extends StatefulWidget {
@@ -25,7 +25,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   AiAnalysisResponse? _analysisResult;
   Map<String, dynamic> _args = {};
 
-  final OpenRouterService _aiService = OpenRouterService();
+  final NvidiaService _nvidiaService = NvidiaService();
 
   bool _isHistory = false;
 
@@ -93,7 +93,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     });
 
     try {
-      final result = await _aiService.getAiAnalysis(loanData: _args);
+      final result = await _nvidiaService.getAiAnalysis(loanData: _args);
 
       // Save to history and increment counter
       await aiRepo.saveAiAnalysis(result.toJson(), _args);

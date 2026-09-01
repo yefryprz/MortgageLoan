@@ -99,6 +99,7 @@ mortgageloan/
 │       │   ├── analytics_service.dart # Firebase Analytics helper
 │       │   ├── cache_service.dart     # In-memory TTL cache
 │       │   ├── currency_service.dart  # Currency Beacon API client
+│       │   ├── nvidia_service.dart    # NVIDIA AI Chat Completion client
 │       │   └── openrouter_service.dart# OpenRouter AI Chat Completion client
 │       ├── utils/                     # Pure Calculation Utilities & Helpers
 │       │   ├── ad_helper.dart         # AdMob Unit IDs resolver

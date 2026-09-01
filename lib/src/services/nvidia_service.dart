@@ -3,12 +3,12 @@ import 'package:http/http.dart' as http;
 import 'package:mortgageloan/src/config/env.dart';
 import '../models/ai_analysis_model.dart';
 
-class OpenRouterService {
+class NvidiaService {
   static final RegExp _placeholderRegex = RegExp(r'\{\{.*?\}\}');
 
   static const String _systemPrompt = '''
 You are an expert loan analysis advisor. Generate recommendations, negotiation strategies, and comparative analysis.
-RULES: Respond ONLY in valid JSON matching the given schema. Use real-world data for the region. CAUTION: All market data, interest rates, and bank information MUST NOT be older than 2 years to avoid outdated information. All responses must be in English.
+RULES: Respond ONLY in valid JSON matching the given schema. Use real-world data for the region. CAUTION: All market data, interest rates, and bank information MUST NOT be older than 2 years to avoid outdated information. All text in your response MUST be in English.
 ''';
 
   static const String _userPromptTemplate = '''
@@ -50,15 +50,15 @@ Respond ONLY with the following JSON Array/Object schema, without any additional
     "summary": {
       "title": "String",
       "subtitle": "String",
-      "overallScore": "Number (0-100)",
+      "overallScore": 85,
       "scoreLabel": "String",
       "riskLevel": "high | medium | low",
       "highlights": ["String"]
     },
     "marketComparison": {
-      "userRate": "Number",
-      "averageRate": "Number",
-      "rateDifference": "Number",
+      "userRate": 6.5,
+      "averageRate": 6.8,
+      "rateDifference": -0.3,
       "ratingLabel": "String",
       "comparedTo": "String",
       "advice": "String"
@@ -66,19 +66,19 @@ Respond ONLY with the following JSON Array/Object schema, without any additional
     "optimalRepaymentPlan": {
       "title": "String",
       "description": "String",
-      "extraPaymentPercent": "Number",
-      "totalInterestSaved": "Number",
-      "monthsSaved": "Number"
+      "extraPaymentPercent": 10,
+      "totalInterestSaved": 35000,
+      "monthsSaved": 48
     },
     "refinancingAlert": {
-      "active": "Boolean",
+      "active": false,
       "urgency": "String",
       "description": "String"
     },
     "bankRecommendations": [
       {
         "bankName": "String",
-        "interestRate": "Number",
+        "interestRate": 6.2,
         "pros": ["String"],
         "cons": ["String"]
       }
@@ -91,14 +91,14 @@ Respond ONLY with the following JSON Array/Object schema, without any additional
       }
     ],
     "riskAssessment": {
-      "overallRisk": "String",
+      "overallRisk": "low | medium | high",
       "warnings": ["String"],
       "positives": ["String"]
     },
     "actionItems": [
       {
         "action": "String",
-        "priority": "String",
+        "priority": "high | medium | low",
         "impact": "String"
       }
     ]
@@ -108,71 +108,6 @@ Respond ONLY with the following JSON Array/Object schema, without any additional
 ''';
 
   Future<AiAnalysisResponse> getAiAnalysis({
-    required Map<String, dynamic> loanData,
-  }) async {
-    final apiKey = Env.aiApiKey;
-    final apiUrl = Env.aiApiUrl;
-    final aiModel = Env.aiModel;
-
-    if (apiKey.isEmpty || apiKey == 'your_key_here') {
-      throw Exception('AI_API_KEY is not configured');
-    }
-
-    String userPrompt = _userPromptTemplate;
-
-    // Replace placeholders
-    loanData.forEach((key, value) {
-      userPrompt = userPrompt.replaceAll('{{$key}}', value.toString());
-    });
-    // For anything missing, replace with N/A
-    userPrompt = userPrompt.replaceAll(_placeholderRegex, 'N/A');
-
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-        'X-OpenRouter-Title': 'Loan Calculator AI',
-      },
-      body: jsonEncode({
-        'model': aiModel,
-        'response_format': {'type': 'json_object'},
-        'messages': [
-          {
-            'role': 'system',
-            'content': _systemPrompt,
-          },
-          {
-            'role': 'user',
-            'content': userPrompt,
-          }
-        ],
-        'temperature': 0.3,
-        'max_tokens': 4000,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> decoded =
-          Map<String, dynamic>.from(jsonDecode(response.body) as Map);
-      final List<dynamic>? choices = decoded['choices'] as List<dynamic>?;
-      final Map<String, dynamic>? firstChoice = choices != null && choices.isNotEmpty
-          ? Map<String, dynamic>.from(choices[0] as Map)
-          : null;
-      final Map<String, dynamic>? message = firstChoice?['message'] != null
-          ? Map<String, dynamic>.from(firstChoice!['message'] as Map)
-          : null;
-      final String contentMessage = (message?['content'] as String?) ?? '{}';
-      final Map<String, dynamic> jsonContent =
-          Map<String, dynamic>.from(jsonDecode(contentMessage) as Map);
-      return AiAnalysisResponse.fromJson(jsonContent);
-    } else {
-      throw Exception(
-          'Failed to generate AI strategy: ${response.statusCode} - ${response.body}');
-    }
-  }
-
-  Future<AiAnalysisResponse> getNvidiaAiAnalysis({
     required Map<String, dynamic> loanData,
   }) async {
     final apiKey = Env.nvidiaApiKey;
@@ -250,7 +185,7 @@ Respond ONLY with the following JSON Array/Object schema, without any additional
       return AiAnalysisResponse.fromJson(jsonContent);
     } else {
       throw Exception(
-          'Failed to generate NVIDIA AI strategy: ${response.statusCode} - ${response.body}');
+          'Failed to generate AI strategy: ${response.statusCode} - ${response.body}');
     }
   }
 }

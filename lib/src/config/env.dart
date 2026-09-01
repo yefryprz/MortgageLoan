@@ -13,6 +13,15 @@ abstract class Env {
   @EnviedField(varName: 'AI_MODEL', defaultValue: 'openrouter/free')
   static final String aiModel = _Env.aiModel;
 
+  @EnviedField(varName: 'NVIDIA_API_KEY', defaultValue: '')
+  static final String nvidiaApiKey = _Env.nvidiaApiKey;
+
+  @EnviedField(varName: 'NVIDIA_API_URL', defaultValue: 'https://integrate.api.nvidia.com/v1/chat/completions')
+  static final String nvidiaApiUrl = _Env.nvidiaApiUrl;
+
+  @EnviedField(varName: 'NVIDIA_MODEL', defaultValue: 'nvidia/nemotron-3.5-lightning-30b-a3b')
+  static final String nvidiaModel = _Env.nvidiaModel;
+
   @EnviedField(varName: 'CURRENCY_BASE_URL', defaultValue: 'https://api.currencybeacon.com/v1')
   static final String currencyBaseUrl = _Env.currencyBaseUrl;
 
