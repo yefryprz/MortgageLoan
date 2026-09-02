@@ -3,10 +3,10 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:mortgageloan/src/utils/ad_helper.dart';
 
 class CustomAdBanner extends StatefulWidget {
-  const CustomAdBanner({Key? key}) : super(key: key);
+  const CustomAdBanner({super.key});
 
   @override
-  _CustomAdBannerState createState() => _CustomAdBannerState();
+  State<CustomAdBanner> createState() => _CustomAdBannerState();
 }
 
 class _CustomAdBannerState extends State<CustomAdBanner> {
@@ -38,8 +38,8 @@ class _CustomAdBannerState extends State<CustomAdBanner> {
     );
   }
 
-  initBannerAd() {
-    bannerAd = new BannerAd(
+  void initBannerAd() {
+    bannerAd = BannerAd(
         size: AdSize.banner,
         adUnitId: AdHelper.bannerAdUnitId,
         listener: BannerAdListener(

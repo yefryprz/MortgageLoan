@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mortgageloan/src/router/routes.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class CustomDrawer extends StatefulWidget {
   final String currentRoute;
 
-  const CustomDrawer({Key? key, required this.currentRoute}) : super(key: key);
+  const CustomDrawer({super.key, required this.currentRoute});
 
   @override
   State<CustomDrawer> createState() => _CustomDrawerState();
@@ -37,10 +39,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
     return InkWell(
       onTap: () {
+        Navigator.pop(context);
         if (!isActive) {
-          Navigator.popAndPushNamed(context, route);
-        } else {
-          Navigator.pop(context);
+          context.go(route);
         }
       },
       child: Container(
@@ -176,31 +177,31 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     context: context,
                     icon: Icons.calculate,
                     title: "Calculate Loan",
-                    route: "/",
+                    route: AppRoutes.home,
                   ),
                   _buildDrawerItem(
                     context: context,
                     icon: CupertinoIcons.lab_flask,
                     title: "Loan Simulator",
-                    route: "simulator",
+                    route: AppRoutes.simulator,
                   ),
                   _buildDrawerItem(
                     context: context,
                     icon: Icons.trending_up,
                     title: "Compound Interest",
-                    route: "compound",
+                    route: AppRoutes.compound,
                   ),
                   _buildDrawerItem(
                     context: context,
                     icon: Icons.currency_exchange,
                     title: "Currency Converter",
-                    route: "currency",
+                    route: AppRoutes.currency,
                   ),
                   _buildDrawerItem(
                     context: context,
                     icon: Icons.history,
                     title: "History",
-                    route: "history",
+                    route: AppRoutes.history,
                   ),
                 ],
               ),

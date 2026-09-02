@@ -5,9 +5,12 @@ class Country {
   Country({required this.name, required this.flagUrl});
 
   factory Country.fromJson(Map<String, dynamic> json) {
+    final nameMap = json['name'] as Map<dynamic, dynamic>?;
+    final flagsMap = json['flags'] as Map<dynamic, dynamic>?;
     return Country(
-      name: json['name']['common'] ?? 'Unknown',
-      flagUrl: json['flags']['png'] ?? '',
+      name: (nameMap?['common'] as String?) ?? 'Unknown',
+      flagUrl: (flagsMap?['png'] as String?) ?? '',
     );
   }
 }
+

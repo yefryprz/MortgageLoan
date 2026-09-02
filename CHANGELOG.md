@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-08-31
+
+### Added
+
+- **NVIDIA AI Advisory Integration:** Integrated NVIDIA AI chat completion client (`NvidiaService`) with structured JSON reasoning for smart loan analysis, risk assessment, and negotiation advice.
+- **Modular Repository Architecture:** Introduced specialized Hive repository classes (`LoanRepository`, `CompoundInterestRepository`, `AiAnalysisRepository`, `AdRepository`, `AppDataRepository`) for persistent storage.
+- **Pure Financial Calculators:** Added isolated, 100% testable mathematical calculation utilities (`LoanCalculator`, `CompoundInterestCalculator`, `LoanSimulationCalculator`).
+- **Obfuscated Secrets Management:** Integrated `envied` compile-time obfuscation for secure API key and environment configuration (`Env`).
+- **Custom UI Components:** Added `CustomSlider` with custom thumb and track styling for seamless rate and term adjustments.
+- **Automated Unit Testing Suite:** Created unit tests covering financial calculators, domain models, caching services, and repository layers.
+- **Architecture & AI Developer Guide:** Added `AGENTS.md` containing architectural standards, coding conventions, and testing guidelines.
+
+### Changed
+
+- **Unlimited AI Advisory:** Removed daily rate limits for AI evaluations, enabling unlimited scenario analyses.
+- **Strict Static Analysis:** Enforced strict typing rules (`strict-casts`, `strict-inference`, `strict-raw-types`) in `analysis_options.yaml`.
+- **Target Android SDK:** Upgraded Android `targetSdkVersion` to 36 for modern platform compatibility.
+- **Screen & Logic Decoupling:** Refactored all UI screens to consume data through repositories and utility calculators.
+- **File Naming Conventions:** Renamed models to standard `snake_case` (e.g. `loan_model.dart`).
+
+### Removed
+
+- **Legacy Storage Helper:** Removed obsolete monolithic `hive.dart` file in favor of domain repositories.
+
 ## [2.0.0] - 2026-03-07
 
 ### Added

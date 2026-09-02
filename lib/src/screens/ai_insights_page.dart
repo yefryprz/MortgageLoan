@@ -1,14 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:mortgageloan/src/database/hive.dart';
+import 'package:mortgageloan/src/database/ai_analysis_repository.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
 import '../models/ai_analysis_model.dart';
-import '../services/openrouter_service.dart';
+import '../services/nvidia_service.dart';
 import '../services/analytics_service.dart';
 
 class AiInsightsPage extends StatefulWidget {
-  const AiInsightsPage({Key? key}) : super(key: key);
+  final Map<String, dynamic>? args;
+
+  const AiInsightsPage({super.key, this.args});
 
   @override
   State<AiInsightsPage> createState() => _AiInsightsPageState();
@@ -16,33 +18,26 @@ class AiInsightsPage extends StatefulWidget {
 
 class _AiInsightsPageState extends State<AiInsightsPage> {
   late final InterstitialAdHelper _adHelper;
-  final loanRepo = LoanData();
+  final aiRepo = AiAnalysisRepository();
 
   bool _isLoading = false;
   String? _error;
   AiAnalysisResponse? _analysisResult;
   Map<String, dynamic> _args = {};
 
-  final OpenRouterService _aiService = OpenRouterService();
+  final NvidiaService _nvidiaService = NvidiaService();
 
   bool _isHistory = false;
-  int _remainingAnalyses = 1;
 
   @override
   void initState() {
     super.initState();
+    if (widget.args != null) {
+      _args = widget.args!;
+      _loadHistoryData();
+    }
     _adHelper = InterstitialAdHelper(adCountKey: "aiCount", adFrequency: 1);
     _adHelper.load();
-    Future.delayed(Duration.zero, () {
-      _checkUsageLimit();
-    });
-  }
-
-  Future<void> _checkUsageLimit() async {
-    final remaining = await loanRepo.getRemainingAiAnalyses();
-    setState(() {
-      _remainingAnalyses = remaining;
-    });
   }
 
   void _loadHistoryData() {
@@ -50,8 +45,8 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
       setState(() {
         _isHistory = true;
         if (_args['savedResponse'] != null) {
-          final Map<String, dynamic> savedResponse =
-              jsonDecode(jsonEncode(_args['savedResponse']));
+          final Map<String, dynamic> savedResponse = Map<String, dynamic>.from(
+              jsonDecode(jsonEncode(_args['savedResponse'])) as Map);
           _analysisResult = AiAnalysisResponse.fromJson(savedResponse);
         }
       });
@@ -61,9 +56,13 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-    _args = args is Map ? Map<String, dynamic>.from(args) : {};
-    _loadHistoryData();
+    if (_args.isEmpty) {
+      final Object? modalArgs = ModalRoute.of(context)?.settings.arguments;
+      if (modalArgs != null && modalArgs is Map<String, dynamic>) {
+        _args = modalArgs;
+        _loadHistoryData();
+      }
+    }
   }
 
   @override
@@ -75,24 +74,11 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   Future<void> _handleGenerateStrategy() async {
     if (_isLoading) return;
 
-    final canPerform = await loanRepo.canPerformAiAnalysis();
-    if (!canPerform) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Only 1 AI evaluation is allowed per day.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-      return;
-    }
-
     // Always show ad after EACH analysis as requested
     AnalyticsService.logEvent('ai_analysis_requested',
         parameters: <String, Object>{
-          'loan_type': _args['loanType'] ?? 'Mortgage',
-          'region': _args['region'] ?? 'Global'
+          'loan_type': (_args['loanType'] as String?) ?? 'Mortgage',
+          'region': (_args['region'] as String?) ?? 'Global'
         });
 
     _adHelper.handleAdDetailNavigation(() {
@@ -107,11 +93,11 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
     });
 
     try {
-      final result = await _aiService.getAiAnalysis(loanData: _args);
+      final result = await _nvidiaService.getAiAnalysis(loanData: _args);
 
       // Save to history and increment counter
-      await loanRepo.saveAiAnalysis(result.toJson(), _args);
-      await loanRepo.incrementAiAnalysisCount();
+      await aiRepo.saveAiAnalysis(result.toJson(), _args);
+      await aiRepo.incrementAiAnalysisCount();
 
       setState(() {
         _analysisResult = result;
@@ -120,10 +106,9 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
 
       AnalyticsService.logEvent('ai_analysis_completed',
           parameters: <String, Object>{
-            'loan_type': _args['loanType'] ?? 'Mortgage',
+            'loan_type': (_args['loanType'] as String?) ?? 'Mortgage',
             'score': result.analysis?.summary?.overallScore ?? 0,
           });
-      _checkUsageLimit();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -136,8 +121,8 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loanType = _args['loanType'] ?? 'Mortgage';
-    final country = _args['region'] ?? 'Global';
+    final String loanType = (_args['loanType'] as String?) ?? 'Mortgage';
+    final String country = (_args['region'] as String?) ?? 'Global';
 
     return PopScope(
         canPop: !_isLoading,
@@ -231,28 +216,33 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
                     _analysisResult!.analysis != null)
                   _buildDynamicResults(_analysisResult!.analysis!)
                 else if (!_isHistory)
-                  Center(
+                  const Center(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      padding: EdgeInsets.symmetric(vertical: 40),
                       child: Column(
                         children: [
-                          const Text(
-                            "Tap 'Generate Strategy' to analyze your loan.",
-                            style: TextStyle(color: Color(0xFF6B7280)),
+                          Icon(
+                            Icons.auto_awesome,
+                            color: Color(0xFF3ac0b5),
+                            size: 40,
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 16),
                           Text(
-                            "Remaining evaluations today: $_remainingAnalyses/1",
-                            style: const TextStyle(
-                                color: Color(0xFF3ac0b5),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            "Only 1 AI evaluation is allowed per day.",
+                            "Tap 'Generate Strategy' to analyze your loan.",
                             style: TextStyle(
-                                color: Color(0xFF9CA3AF), fontSize: 11),
+                              color: Color(0xFF1F2937),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "Get instant AI recommendations, rate comparisons, and custom repayment plans.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
@@ -265,7 +255,7 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           floatingActionButton: _isHistory ? null : _buildFloatingActions(),
-          bottomNavigationBar: CustomAdBanner(),
+          bottomNavigationBar: const CustomAdBanner(),
         ));
   }
 
@@ -510,8 +500,8 @@ class _AiInsightsPageState extends State<AiInsightsPage> {
   }
 
   Widget _buildMarketComparisonCard(MarketComparison data) {
-    num userRate = data.userRate ?? 0;
-    num avgRate = data.averageRate ?? 0;
+    final num userRate = data.userRate ?? 0;
+    final num avgRate = data.averageRate ?? 0;
 
     return _buildInsightsCard(
       icon: Icons.insert_chart,

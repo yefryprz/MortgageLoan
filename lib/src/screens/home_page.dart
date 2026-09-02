@@ -1,18 +1,22 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' as intl;
-import 'package:mortgageloan/src/database/hive.dart';
+import 'package:mortgageloan/src/database/loan_repository.dart';
 import 'package:mortgageloan/src/models/loan_model.dart';
+import 'package:mortgageloan/src/router/routes.dart';
+import 'package:mortgageloan/src/utils/loan_calculator.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
+import 'package:mortgageloan/src/widgets/custom_slider.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
 import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
@@ -27,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   double _interestRate = 10.0;
   double _totalInterest = 0.0;
 
-  final loanRepo = LoanData();
+  final LoanRepository loanRepo = LoanRepository();
   final _currencyFormat = intl.NumberFormat.currency(
     locale: 'en_US',
     symbol: '\$',
@@ -65,12 +69,12 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         key: _scaffoldKey,
         drawerEnableOpenDragGesture: false,
-        drawer: const CustomDrawer(currentRoute: "/"),
+        drawer: const CustomDrawer(currentRoute: AppRoutes.home),
         appBar: AppBar(
           backgroundColor: const Color(0xFFF6F8F9),
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.menu, color: const Color(0xFF2C3E50)),
+            icon: const Icon(Icons.menu, color: Color(0xFF2C3E50)),
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
           title: const Text(
@@ -84,33 +88,33 @@ class _HomePageState extends State<HomePage> {
           centerTitle: true,
           actions: [
             IconButton(
-              icon: Icon(Icons.history, color: const Color(0xFF2C3E50)),
-              onPressed: () => Navigator.pushNamed(context, "history"),
+              icon: const Icon(Icons.history, color: Color(0xFF2C3E50)),
+              onPressed: () => context.push(AppRoutes.history),
             ),
           ],
         ),
         body: SingleChildScrollView(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           physics: const BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Loan Amount Card
               _buildCard(child: _buildAmountSection()),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Interest Rate Card
               _buildCard(child: _buildInterestSection()),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Loan Period Card
               _buildCard(child: _buildPeriodSection()),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Estimated Monthly Installment
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+                padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
@@ -119,13 +123,13 @@ class _HomePageState extends State<HomePage> {
                       color: const Color(0xFF40E0D0).withValues(alpha: 0.05),
                       spreadRadius: 5,
                       blurRadius: 20,
-                      offset: Offset(0, 5),
+                      offset: const Offset(0, 5),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'Estimated Monthly Installment',
                       style: TextStyle(
                         color: Color(0xFF6B7280),
@@ -133,17 +137,17 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       _currencyFormat.format(_payment),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 38,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF32D3B8),
+                        color: Color(0xFF32D3B8),
                       ),
                     ),
-                    SizedBox(height: 12),
-                    Text(
+                    const SizedBox(height: 12),
+                    const Text(
                       'Fees and taxes may apply based\non your region.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -156,10 +160,10 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
 
               // Generate Button
-              Container(
+              SizedBox(
                 width: double.infinity,
                 height: 60,
                 child: ElevatedButton(
@@ -172,7 +176,7 @@ class _HomePageState extends State<HomePage> {
                     elevation: 4,
                     shadowColor: const Color(0xFF32D3B8).withValues(alpha: 0.4),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
@@ -189,11 +193,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),
-        bottomNavigationBar: CustomAdBanner(),
+        bottomNavigationBar: const CustomAdBanner(),
       ),
     );
 
@@ -202,7 +206,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCard({required Widget child}) {
     return Container(
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -211,7 +215,7 @@ class _HomePageState extends State<HomePage> {
             color: Colors.black.withValues(alpha: 0.03),
             spreadRadius: 0,
             blurRadius: 15,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -223,7 +227,7 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Loan Amount',
           style: TextStyle(
             color: Color(0xFF6B7280),
@@ -231,16 +235,16 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: const Color(0xFFF9FAFB),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             children: [
-              Text(
+              const Text(
                 '\$',
                 style: TextStyle(
                   fontSize: 28,
@@ -248,23 +252,23 @@ class _HomePageState extends State<HomePage> {
                   color: Color(0xFF9CA3AF),
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: _loanAmountController,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  style: TextStyle(
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1F2937),
                   ),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                   ),
                   onChanged: (value) {
-                    String clean = value.replaceAll(RegExp(r'[^0-9]'), '');
+                    final String clean = value.replaceAll(RegExp(r'[^0-9]'), '');
                     if (clean.isEmpty) {
                       _loanAmount = 0;
                     } else {
@@ -285,7 +289,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         _buildCustomSlider(
           value: _loanAmount,
           min: 1000,
@@ -298,7 +302,7 @@ class _HomePageState extends State<HomePage> {
             });
           },
         ),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
@@ -322,7 +326,7 @@ class _HomePageState extends State<HomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               'Interest Rate',
               style: TextStyle(
                 color: Color(0xFF6B7280),
@@ -332,7 +336,7 @@ class _HomePageState extends State<HomePage> {
             ),
             Container(
               width: 100,
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAFB),
                 borderRadius: BorderRadius.circular(12),
@@ -343,16 +347,16 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: TextField(
                       controller: _interestRateController,
-                      keyboardType: TextInputType.numberWithOptions(
+                      keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       textAlign: TextAlign.right,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF32D3B8),
+                        color: Color(0xFF32D3B8),
                       ),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
@@ -374,8 +378,8 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Text(
+                  const SizedBox(width: 4),
+                  const Text(
                     '%',
                     style: TextStyle(
                       fontSize: 16,
@@ -388,7 +392,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         _buildCustomSlider(
           value: _interestRate,
           min: 1,
@@ -401,7 +405,7 @@ class _HomePageState extends State<HomePage> {
             });
           },
         ),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
@@ -425,7 +429,7 @@ class _HomePageState extends State<HomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               'Loan Period',
               style: TextStyle(
                 color: Color(0xFF6B7280),
@@ -435,7 +439,7 @@ class _HomePageState extends State<HomePage> {
             ),
             Container(
               width: 120,
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAFB),
                 borderRadius: BorderRadius.circular(12),
@@ -448,12 +452,12 @@ class _HomePageState extends State<HomePage> {
                       controller: _loanPeriodController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.right,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1F2937),
                       ),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
@@ -474,8 +478,8 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                   ),
-                  SizedBox(width: 6),
-                  Text(
+                  const SizedBox(width: 6),
+                  const Text(
                     'Years',
                     style: TextStyle(
                       fontSize: 15,
@@ -488,7 +492,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         _buildCustomSlider(
           value: _loanPeriod.toDouble(),
           min: 1,
@@ -501,7 +505,7 @@ class _HomePageState extends State<HomePage> {
             });
           },
         ),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
@@ -529,11 +533,11 @@ class _HomePageState extends State<HomePage> {
         activeTrackColor: const Color(0xFFE5E7EB), // grey base
         inactiveTrackColor: const Color(0xFFE5E7EB),
         trackHeight: 4.0,
-        thumbShape: _CustomThumbShape(
-          color: const Color(0xFF32D3B8),
+        thumbShape: const CustomThumbShape(
+          color: Color(0xFF32D3B8),
         ), // teal outline thumb
-        overlayShape: RoundSliderOverlayShape(overlayRadius: 24),
-        trackShape: _CustomTrackShape(
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
+        trackShape: CustomTrackShape(
           progress: (value - min) / (max - min),
           color: const Color(0xFFE5E7EB),
         ),
@@ -568,27 +572,30 @@ class _HomePageState extends State<HomePage> {
 
       loanRepo.insertRecord(loan);
       _adHelper.handleAdDetailNavigation(() {
-        Navigator.pushNamed(context, "amortization", arguments: loan);
+        context.push(AppRoutes.amortization, extra: loan);
       });
     }
   }
 
   void calc() {
     try {
-      if (_loanAmount == 0) {
+      if (_loanAmount <= 0 || _loanPeriod <= 0 || _interestRate <= 0) {
         _payment = 0;
         _totalInterest = 0;
         return;
       }
-      var monthlyRate = _interestRate / 100 / 12;
-      var totalMonths = _loanPeriod * 12;
 
-      var monthlyPayment = _loanAmount *
-          (monthlyRate * pow(1 + monthlyRate, totalMonths)) /
-          (pow(1 + monthlyRate, totalMonths) - 1);
+      final monthlyPayment = LoanCalculator.calculateMonthlyPayment(
+        amount: _loanAmount,
+        rate: _interestRate,
+        termYears: _loanPeriod,
+      );
 
-      var totalAmount = monthlyPayment * totalMonths;
-      var totalInterest = totalAmount - _loanAmount;
+      final totalInterest = LoanCalculator.calculateTotalInterest(
+        monthlyPayment: monthlyPayment,
+        termYears: _loanPeriod,
+        amount: _loanAmount,
+      );
 
       _payment = monthlyPayment;
       _totalInterest = totalInterest;
@@ -601,7 +608,7 @@ class _HomePageState extends State<HomePage> {
   Future<bool> validField({String? message, bool showMessage = true}) async {
     if (_loanAmount <= 0 || _loanPeriod <= 0 || _interestRate <= 0) {
       if (showMessage) {
-        await showDialog(
+        await showDialog<void>(
           barrierDismissible: false,
           context: context,
           builder: (context) {
@@ -623,82 +630,5 @@ class _HomePageState extends State<HomePage> {
       return false;
     }
     return true;
-  }
-}
-
-class _CustomTrackShape extends RoundedRectSliderTrackShape {
-  final double progress;
-  final Color color;
-  _CustomTrackShape({required this.progress, required this.color});
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset offset, {
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required Animation<double> enableAnimation,
-    required TextDirection textDirection,
-    required Offset thumbCenter,
-    Offset? secondaryOffset,
-    bool isDiscrete = false,
-    bool isEnabled = false,
-    double additionalActiveTrackHeight = 2,
-  }) {
-    super.paint(
-      context,
-      offset,
-      parentBox: parentBox,
-      sliderTheme: sliderTheme,
-      enableAnimation: enableAnimation,
-      textDirection: textDirection,
-      thumbCenter: thumbCenter,
-      secondaryOffset: secondaryOffset,
-      isDiscrete: isDiscrete,
-      isEnabled: isEnabled,
-      additionalActiveTrackHeight: additionalActiveTrackHeight,
-    );
-  }
-}
-
-class _CustomThumbShape extends RoundSliderThumbShape {
-  final Color color;
-  _CustomThumbShape({required this.color})
-      : super(enabledThumbRadius: 12, pressedElevation: 8, elevation: 4);
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset center, {
-    required Animation<double> activationAnimation,
-    required Animation<double> enableAnimation,
-    required bool isDiscrete,
-    required TextPainter labelPainter,
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required TextDirection textDirection,
-    required double value,
-    required double textScaleFactor,
-    required Size sizeWithOverflow,
-  }) {
-    final Canvas canvas = context.canvas;
-
-    // Outer shadow
-    final Path path = Path()
-      ..addOval(Rect.fromCircle(center: center, radius: enabledThumbRadius));
-    canvas.drawShadow(path, Colors.black, elevation, true);
-
-    // Inner white circle
-    final Paint fillPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, enabledThumbRadius, fillPaint);
-
-    // Outer teal border stroke
-    final Paint strokePaint = Paint()
-      ..color = color
-      ..strokeWidth = 3.0
-      ..style = PaintingStyle.stroke;
-    canvas.drawCircle(center, enabledThumbRadius - 1.5, strokePaint);
   }
 }

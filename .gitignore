@@ -5,6 +5,7 @@
 *.swp
 .DS_Store
 .env
+lib/src/config/env.g.dart
 .atom/
 .buildlog/
 .history

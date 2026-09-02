@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:fl_chart/fl_chart.dart';
-import 'package:mortgageloan/src/database/hive.dart';
+import 'package:mortgageloan/src/database/compound_interest_repository.dart';
 import 'package:mortgageloan/src/models/compound_interest_model.dart';
+import 'package:mortgageloan/src/router/routes.dart';
+import 'package:mortgageloan/src/utils/compound_interest_calculator.dart';
 import 'package:mortgageloan/src/widgets/adbanner_widget.dart';
 import 'package:mortgageloan/src/widgets/drawer_widget.dart';
 import 'package:mortgageloan/src/utils/interstitial_ad_helper.dart';
 import 'package:mortgageloan/src/services/analytics_service.dart';
 
 class CompoundInterestPage extends StatefulWidget {
+  const CompoundInterestPage({super.key});
+
   @override
-  _CompoundInterestPageState createState() => _CompoundInterestPageState();
+  State<CompoundInterestPage> createState() => _CompoundInterestPageState();
 }
 
 class _CompoundInterestPageState extends State<CompoundInterestPage> {
@@ -34,7 +39,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   final _numberFormat = intl.NumberFormat("#,###", "en_US");
 
   late final InterstitialAdHelper _adHelper;
-  final loanRepo = LoanData();
+  final compoundRepo = CompoundInterestRepository();
 
   @override
   void initState() {
@@ -62,7 +67,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
     return Scaffold(
       key: _scaffoldKey,
       drawerEnableOpenDragGesture: false,
-      drawer: const CustomDrawer(currentRoute: "compound"),
+      drawer: const CustomDrawer(currentRoute: AppRoutes.compound),
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -103,7 +108,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomAdBanner(),
+      bottomNavigationBar: const CustomAdBanner(),
     );
   }
 
@@ -194,7 +199,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
                     contentPadding: EdgeInsets.zero,
                   ),
                   onChanged: (value) {
-                    String clean = value.replaceAll(RegExp(r'[^0-9]'), '');
+                    final String clean = value.replaceAll(RegExp(r'[^0-9]'), '');
                     if (clean.isEmpty) {
                       _principal = 0;
                     } else {
@@ -471,17 +476,18 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   Widget _buildGrowthChart() {
     if (_yearlyDetails.isEmpty) return const SizedBox();
 
-    List<FlSpot> spots = [];
+    final List<FlSpot> spots = [];
     spots.add(FlSpot(0, _principal)); // Start point
 
     for (int i = 0; i < _yearlyDetails.length; i++) {
       // Step size for x-axis if there are many years. For simplicity plot them all
-      spots.add(FlSpot(_yearlyDetails[i]['year'].toDouble(),
-          _yearlyDetails[i]['endBalance']));
+      final yearNum = (_yearlyDetails[i]['year'] as num).toDouble();
+      final endBalNum = (_yearlyDetails[i]['endBalance'] as num).toDouble();
+      spots.add(FlSpot(yearNum, endBalNum));
     }
 
     // Determine max Y for scaling
-    double maxY = _result * 1.1;
+    final double maxY = _result * 1.1;
 
     return LineChart(
       LineChartData(
@@ -502,7 +508,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
             },
           ),
         ),
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         titlesData: FlTitlesData(
           show: true,
           topTitles:
@@ -517,7 +523,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
               reservedSize: 22,
               getTitlesWidget: (value, meta) {
                 // Determine step for showing year markers at bottom
-                int step = _years > 10 ? (_years ~/ 5) : 2;
+                final int step = _years > 10 ? (_years ~/ 5) : 2;
                 if (value.toInt() == 0 ||
                     value.toInt() == _years ||
                     (value.toInt() % step == 0)) {
@@ -548,7 +554,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
               show: true,
               getDotPainter: (spot, percent, barData, index) {
                 // Only show dots exactly where we show labels
-                int step = _years > 10 ? (_years ~/ 5) : 2;
+                final int step = _years > 10 ? (_years ~/ 5) : 2;
                 if (spot.x == 0 ||
                     spot.x == _years ||
                     spot.x.toInt() % step == 0) {
@@ -713,7 +719,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
   }
 
   void calculate() {
-    if (_principal <= 0) {
+    if (_principal <= 0 || _years <= 0 || _rate <= 0) {
       setState(() {
         _result = 0;
         _yearlyDetails = [];
@@ -721,24 +727,20 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
       return;
     }
 
-    double amount = _principal;
-    _yearlyDetails = [];
+    final breakdownItems = CompoundInterestCalculator.generateYearlyBreakdown(
+      principal: _principal,
+      rate: _rate,
+      years: _years,
+    );
 
-    for (int year = 1; year <= _years; year++) {
-      double interest = amount * (_rate / 100);
-      double newAmount = amount + interest;
-
-      _yearlyDetails.add({
-        'year': year,
-        'startBalance': amount,
-        'interest': interest,
-        'endBalance': newAmount,
-      });
-
-      amount = newAmount;
-    }
-
-    _result = amount;
+    setState(() {
+      _yearlyDetails = breakdownItems.map((item) => item.toMap()).toList();
+      _result = CompoundInterestCalculator.calculateFinalAmount(
+        principal: _principal,
+        rate: _rate,
+        years: _years,
+      );
+    });
   }
 
   void navigateToBreakdown() async {
@@ -763,7 +765,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
     );
 
     _adHelper.handleAdDetailNavigation(() {
-      Navigator.pushNamed(context, "compound_breakdown", arguments: {
+      context.push(AppRoutes.compoundBreakdown, extra: {
         'principal': _principal,
         'rate': _rate,
         'years': _years,
@@ -775,8 +777,8 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
 
   void _saveCalculationSilent() async {
     if (_principal > 0) {
-      final records = await loanRepo.getCompoundInterestHistory();
-      bool isDuplicate = records.any((record) =>
+      final records = await compoundRepo.getHistory();
+      final bool isDuplicate = records.any((record) =>
           record.principal == _principal &&
           record.rate == _rate &&
           record.years == _years);
@@ -789,7 +791,7 @@ class _CompoundInterestPageState extends State<CompoundInterestPage> {
           result: _result,
           date: DateTime.now(),
         );
-        loanRepo.saveCompoundInterest(calculation);
+        compoundRepo.save(calculation);
       }
     }
   }
